@@ -1,0 +1,9 @@
+# Python defaults
+*.py[cox]
+
+# Virtualenv
+bin/
+data/
+include/
+lib/
+pip-install.log
