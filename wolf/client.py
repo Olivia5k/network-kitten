@@ -1,4 +1,4 @@
-import sys
+# import sys
 import logging
 import zmq
 
@@ -25,7 +25,12 @@ class WolfClient(object):
 
 
 def main():
-    msg = sys.argv[1]
+    # msg = sys.argv[1]
+    import json
+    msg = json.dumps({
+        'paradigm': 'shasum',
+        'method': 'ping'
+    })
     WolfClient().send(msg)
 
 
