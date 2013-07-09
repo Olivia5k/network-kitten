@@ -1,8 +1,10 @@
 import json
 import logging
 import zmq
+import jsonschema
 
 from wolf.paradigm.shasum import ShasumParadigm
+from wolf.validation import validate
 
 PORT = 5555
 logging.basicConfig(level=logging.DEBUG)
@@ -35,10 +37,15 @@ class WolfServer(object):
             request_str = socket.recv_unicode()
 
             try:
-                response_str = self.handle_request(request_str)
+                response = self.handle_request(request_str)
             except RequestException as e:
                 response = {
                     'code': e.code,
+                    'message': e.message,
+                }
+            except jsonschema.exceptions.ValidationError as e:
+                response = {
+                    'code': 'VALIDATION_ERROR',
                     'message': e.message,
                 }
             except Exception as e:
@@ -58,6 +65,8 @@ class WolfServer(object):
         self.log.info('Setting up server')
         self.paradigms = self.get_paradigms()
 
+        # TODO: Create database tables
+
     def get_paradigms(self, *paradigms):
         self.log.info('Loading paradigms')
         return {
@@ -66,6 +75,7 @@ class WolfServer(object):
 
     def validate_request(self, request):
         self.log.info('Validating request...')
+        validate(request, 'core')
 
     def validate_response(self, response):
         self.log.info('Validating response...')
