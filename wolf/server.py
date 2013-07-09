@@ -8,13 +8,22 @@ PORT = 5555
 logging.basicConfig(level=logging.DEBUG)
 
 
+class RequestException(Exception):
+    def __init__(self, code, message):
+        self.code = code
+        self.message = message
+
+    def __str__(self):
+        return "{0}: {1}".format(self.code, self.message)
+
+
 class WolfServer(object):
     log = logging.getLogger('WolfServer')
 
     def __init__(self):
         self.paradigms = {}
 
-    def listen_forever(self, port=PORT):
+    def listen_forever(self, port=PORT):  # pragma: nocover
         context = zmq.Context()
         socket = context.socket(zmq.REP)
 
@@ -23,9 +32,26 @@ class WolfServer(object):
         self.log.info('Listening on %s', host)
 
         while True:
-            request = socket.recv_unicode()
-            response = self.handle_request(request)
-            socket.send_unicode(response)
+            request_str = socket.recv_unicode()
+
+            try:
+                response_str = self.handle_request(request_str)
+            except RequestException as e:
+                response = {
+                    'code': e.code,
+                    'message': e.message,
+                }
+            except Exception as e:
+                self.log.exception('Request handling exception')
+                response = {
+                    'code': 'UNKNOWN_ERROR',
+                    'message': e.value,
+                }
+
+            response_str = json.dumps(response)
+            socket.send_unicode(response_str)
+
+            # Separate blocks per request, for now
             print()
 
     def setup(self):
@@ -53,10 +79,21 @@ class WolfServer(object):
         and handler, get the response, validate the response, encode the
         response and return it back to the server.
 
+        Takes a JSON string as input and returns a dictionary.
+
         """
 
         self.log.info('Getting new request...')
-        request = json.loads(request_str)
+
+        try:
+            request = json.loads(request_str)
+        except ValueError:
+            self.log.error('Invalid JSON request: %s', request_str)
+            raise RequestException(
+                'INVALID_REQUEST',
+                'Unable to decode JSON request.'
+            )
+
         self.log.debug('Got request: %s', request)
 
         self.validate_request(request)
@@ -68,19 +105,19 @@ class WolfServer(object):
         method = getattr(paradigm, method_name, None)
 
         response = method(request)
+
         self.validate_response(response)
 
-        response = json.dumps(response)
         self.log.debug('Returning response: %s', response)
         return response
 
 
-def main():
+def main():  # pragma: nocover
     logging.info('Starting wolf server')
     server = WolfServer()
     server.setup()
 
     server.listen_forever()
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: nocover
     main()
