@@ -6,6 +6,7 @@ bin/
 data/
 include/
 lib/
+man/
 build/
 share/
 pip-install.log
