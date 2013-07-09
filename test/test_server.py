@@ -1,6 +1,6 @@
 import json
-import unittest
 import jsonschema
+import pytest
 
 from wolf.server import WolfServer
 from wolf.server import RequestException
@@ -13,8 +13,8 @@ class MockParadigm(object):
         }
 
 
-class ServerIntegrationTest(unittest.TestCase):
-    def setUp(self):
+class TestServerIntegration(object):
+    def setup_method(self, method):
         self.server = WolfServer()
         self.server.paradigms = {
             'mock': MockParadigm()
@@ -24,20 +24,14 @@ class ServerIntegrationTest(unittest.TestCase):
         request = json.dumps({'paradigm': 'mock', 'method': 'fake'})
         result = self.server.handle_request(request)
 
-        self.assertEqual(result, {'code': 'OK'})
+        assert result == {'code': 'OK'}
 
     def test_handle_request_invalid_json(self):
         request = '{'
-        self.assertRaises(
-            RequestException,
-            self.server.handle_request,
-            request
-        )
+        with pytest.raises(RequestException):
+            self.server.handle_request(request)
 
     def test_handle_request_invalid_validation(self):
         request = json.dumps({'hehe': 'fail'})
-        self.assertRaises(
-            jsonschema.exceptions.ValidationError,
-            self.server.handle_request,
-            request
-        )
+        with pytest.raises(jsonschema.exceptions.ValidationError):
+            self.server.handle_request(request)

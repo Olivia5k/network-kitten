@@ -1,17 +1,12 @@
 import logging
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
+from wolf.db import Session
+from wolf.db import Base
 from wolf.util.names import random_name
-
-engine = create_engine('sqlite:///data/wolf.db')
-Base = declarative_base()
-Session = sessionmaker(bind=engine)
 
 
 class Connection(Base):
@@ -23,25 +18,19 @@ class Connection(Base):
 
     log = logging.getLogger('Connection')
 
-    def __init__(self, id, address, port, display_name=None):
-        self.id = id
+    def __init__(self, address, port, display_name=None):
         self.address = address
         self.port = port
         self.display_name = display_name
 
     @staticmethod
-    def connect(id):
-        return
-
-    @staticmethod
-    def create(id_, address, port, display_name=None):
+    def create(address, port, display_name=None):
         session = Session()
-        if display_name is None:
+
+        if not display_name:
             display_name = random_name()
 
-        con = Connection(id_, address, port, display_name)
+        con = Connection(address, port, display_name)
         session.add(con)
         session.commit()
-
         session.close()
-        del session

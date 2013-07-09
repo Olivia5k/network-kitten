@@ -1,22 +1,29 @@
-import unittest
-from mock import patch
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from wolf import connections
-
-engine = create_engine('sqlite:///test/test.db')
-connections.Base.metadata.create_all(engine)
+from wolf import db
+from wolf.connections import Connection
 
 
-class ConnectionTest(unittest.TestCase):
-    @patch.object(connections, 'Session')
-    def test_create_connection(self, Session):
-        Session = sessionmaker(bind=engine)
+class TestConnection(object):
+    def setup_method(self, method):
+        db.Base.metadata.create_all(db.engine)
 
-        connections.Connection.create('test', 'localhost', 65535)
+    def teardown_method(self, method):
+        db.Base.metadata.drop_all(db.engine)
 
-        session = Session()
-        res = session.query(connections.Connection).all()
-        self.assertEqual(len(res), 1)
+    def test_create_connection(self):
+        Connection.create('localhost', 65535)
+
+        session = db.Session()
+        res = session.query(Connection).all()
+
+        assert len(res) == 1
+        assert res[0].address == "localhost"
+        assert res[0].port == 65535
+
+    def test_create_connection_with_display_name(self):
+        Connection.create('localhost', 65535, 'gooby')
+
+        session = db.Session()
+        res = session.query(Connection).all()
+
+        assert len(res) == 1
+        assert res[0].display_name == 'gooby'
