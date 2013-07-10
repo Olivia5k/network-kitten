@@ -3,10 +3,10 @@ import logging
 import zmq
 import jsonschema
 
+from wolf import PORT
 from wolf.paradigm.shasum import ShasumParadigm
 from wolf.validation import validate
 
-PORT = 5555
 logging.basicConfig(level=logging.DEBUG)
 
 

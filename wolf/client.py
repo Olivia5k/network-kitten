@@ -3,7 +3,7 @@ import logging
 import zmq
 
 
-PORT = 5555
+from wolf import PORT
 logging.basicConfig(level=logging.DEBUG)
 
 
