@@ -14,10 +14,12 @@ It is currently in a pre-alpha state; *Here be dragons*.
 * Install [virtualenv](http://www.virtualenv.org/en/latest/)
 * Clone this repo, cd into it
 * Run the following:
-```virtualenv .
+
+```
+virtualenv .
 source bin/activate
 pip install -r dev.requirements.txt
 python setup.py develop
 ```
-* Run the tests to verify that it works:
-```py.test test/```
+
+* Run the tests to verify that it works: `py.test test/`
