@@ -34,3 +34,28 @@ class Connection(Base):
         session.add(con)
         session.commit()
         session.close()
+
+
+def setup_parser(subparsers):
+    con = subparsers.add_parser(
+        'connection',
+        help="List, add or modify connections."
+    )
+
+    sub = con.add_subparsers(help='Sub-commands', dest="sub")
+
+    add = sub.add_parser('add', help='Add a connection')
+    add.add_argument('ip', type=str)
+    add.add_argument('port', type=int)
+    add.add_argument('--display_name', type=str, metavar="<name>")
+
+    remove = sub.add_parser('remove', help='Remove a connection')
+    remove.add_argument('name', type=str)
+
+    subparsers.executors.update({
+        'connection': execute_parser
+    })
+
+
+def execute_parser(ns):
+    pass
