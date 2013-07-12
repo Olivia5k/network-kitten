@@ -1,19 +1,19 @@
 import os
-import logging
+import logbook
 import pkgutil
 
 
 class Paradigm(object):
     def __init__(self, *args, **kwargs):
         # Set up a logger. Logger name will be same as the subclass.
-        self.log = logging.getLogger(self.__class__.__name__)
+        self.log = logbook.Logger(self.__class__.__name__)
 
     def scan(self, path):
         roots = []
         has_dir = hasattr(self, 'check_directory')
         has_file = hasattr(self, 'check_file')
 
-        for root, files, dirs in os.walk(path):
+        for root, dirs, files in os.walk(path):
             if has_dir:
                 for d in dirs:
                     if self.check_directory(d):
@@ -26,6 +26,7 @@ class Paradigm(object):
                         roots.append(root)
                         break
 
+        self.log.debug('Found roots: {0}', roots)
         return roots
 
 

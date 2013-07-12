@@ -1,14 +1,12 @@
-# import sys
-import logging
+import json
+import logbook
 import zmq
 
-
 from wolf.conf import PORT
-logging.basicConfig(level=logging.DEBUG)
 
 
 class WolfClient(object):
-    log = logging.getLogger('WolfClient')
+    log = logbook.Logger('WolfClient')
 
     def send(self, msg, port=PORT):
         context = zmq.Context()
@@ -16,7 +14,7 @@ class WolfClient(object):
         host = 'tcp://localhost:{0}'.format(port)
         socket.connect(host)
 
-        self.log.info('Sending request on {1}: {0}'.format(msg, host))
+        self.log.info('Sending request on {1}: {0}', msg, host)
         socket.send_unicode(msg)
 
         self.log.info('Waiting for reply')
@@ -25,12 +23,7 @@ class WolfClient(object):
 
 
 def main():
-    # msg = sys.argv[1]
-    import json
-    msg = json.dumps({
-        'paradigm': 'shasum',
-        'method': 'ping'
-    })
+    msg = json.dumps({'paradigm': 'shasum', 'method': 'ping'})
     WolfClient().send(msg)
 
 

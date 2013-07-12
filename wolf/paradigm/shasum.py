@@ -1,27 +1,44 @@
 import re
 import os
-import logging
+import datetime
+import logbook
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
+from wolf import conf
+from wolf.db import Base
+from wolf.db import Session
+from wolf.db import engine
+from wolf.util import mkdir
 from wolf.paradigm.core import Paradigm
 
-engine = create_engine('sqlite:///data/wolf.db')
-Base = declarative_base()
-Session = sessionmaker(bind=engine)
+TEMP_BASE = os.path.join(conf.CACHE_DIR, 'shasum')
 
 
 class ShasumParadigm(Paradigm):
     dir_rxp = re.compile(r'^[0-9a-f]{40}$')
     session = Session()
 
-    def check_directory(self, d):
-        name = d.split('/')[-1]
+    def setup(self):
+        self.log.info('Setting up ShasumParadigm')
+
+        self.log.debug('Creating tables')
+        ShasumItem.metadata.bind = engine
+        ShasumItem.metadata.create_all()
+
+        mkdir(TEMP_BASE)
+
+        for root in self.scan(TEMP_BASE):
+            for path in os.listdir(root):
+                ShasumItem.create(os.path.join(root, path))
+
+    def check_directory(self, path):
+        name = path.split('/')[-1]
 
         if self.dir_rxp.search(name):
             return True
@@ -39,37 +56,39 @@ class ShasumParadigm(Paradigm):
 
 class ShasumItem(Base):
     __tablename__ = 'shasum'
+
     id = Column(String(40), primary_key=True)
-    files = Column(Text())
+    owner = Column(Integer, ForeignKey('connection.id'), default=0)
+    files = Column(Text)
+    created = Column(DateTime, default=datetime.datetime.now)
 
     file_rxp = re.compile(r'^[0-9a-f]{40}$')
 
-    log = logging.getLogger('ShasumItem')
+    log = logbook.Logger('ShasumItem')
 
-    def __init__(self, path):
-        self.parsed = False
-        self.path = os.path.abspath(path)
+    def __init__(self, id, files, owner=0, created=None):
+        self.id = id
+        self.owner = owner
+        self.files = files
+
+        if created:
+            self.created = created
 
     def __repr__(self):
-        return '<Shasum {0:.7} [{1}f]>'.format(
-            self.id,
-            len(self.files.split(','))
-        )
+        return '<Shasum {0:.7} [{1}]>'.format(self.id, self.files)
 
-    def parse(self):
-        if self.parsed:
-            return
+    @staticmethod
+    def create(path):
+        id = path.split('/')[-1]
+        ShasumItem.log.debug('Create: {0}', id)
+        path = os.path.abspath(path)
 
-        self.parsed = True
-        self.id = self.path.split('/')[-1]
-        self.files = []
+        files = [f for f in os.listdir(path)]
+        files = ','.join(files)
 
-        for f in os.listdir(self.path):
-            abspath = os.path.join(self.path, f)
-            if os.path.isfile(abspath) and self.file_rxp.search(f):
-                self.files.append(f)
-
-        self.files = ','.join(self.files)
+        shasum = ShasumItem(id, files)
+        shasum.save()
+        return shasum
 
     def save(self):
         session = Session()
@@ -77,15 +96,13 @@ class ShasumItem(Base):
         cls = self.__class__
         res = session.query(cls).filter(cls.id == self.id)
         if res.count():
-            self.log.debug('Already in db; skipping')
+            self.log.debug('{0}: Already in db; skipping', self)
             return
 
-        self.log.debug('Saving')
+        self.log.debug('{0}: Saving', self)
         session.add(self)
         session.commit()
         del session
-
-        self.log.debug('Done')
 
     def serialize(self):
         return {

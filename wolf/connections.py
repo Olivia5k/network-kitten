@@ -1,6 +1,8 @@
-import logging
+import datetime
+import logbook
 
 from sqlalchemy import Column
+from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import String
 
@@ -11,12 +13,15 @@ from wolf.util.names import random_name
 
 class Connection(Base):
     __tablename__ = 'connection'
+
     id = Column(Integer(), primary_key=True)
     address = Column(String(255))
     port = Column(Integer())
     display_name = Column(String(50))
+    created = Column(DateTime, default=datetime.datetime.now)
+    last_seen = Column(DateTime, default=datetime.datetime.now)
 
-    log = logging.getLogger('Connection')
+    log = logbook.Logger('Connection')
 
     def __init__(self, address, port, display_name=None):
         self.address = address

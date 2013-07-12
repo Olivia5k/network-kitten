@@ -1,9 +1,9 @@
 import os
 import json
-import logging
 import signal
 import zmq
 import jsonschema
+import logbook
 
 from wolf import conf
 from wolf.paradigm.shasum import ShasumParadigm
@@ -20,7 +20,7 @@ class RequestException(Exception):
 
 
 class WolfServer(object):
-    log = logging.getLogger('WolfServer')
+    log = logbook.Logger('WolfServer')
     torn = False
 
     def __init__(self):
@@ -33,7 +33,7 @@ class WolfServer(object):
 
             host = 'tcp://*:{0}'.format(port)
             socket.bind(host)
-            self.log.info('Listening on %s', host)
+            self.log.info('Listening on {0}', host)
 
             while True:
                 try:
@@ -74,12 +74,15 @@ class WolfServer(object):
 
     def setup(self):
         self.log.info('Setting up server')
+
         self.paradigms = self.get_paradigms()
+        for paradigm in self.paradigms.values():
+            paradigm.setup()
 
         # Set up signal handlers
         def handle(signum, frame):
             names = {2: 'SIGINT', 15: 'SIGTERM'}
-            self.log.warning('Recieved %s', names[signum])
+            self.log.warning('Recieved {0}', names[signum])
             self.teardown()
 
         signal.signal(signal.SIGINT, handle)
@@ -87,7 +90,7 @@ class WolfServer(object):
 
         # Set up pidfile
         pid = str(os.getpid())
-        self.log.debug('Running on pid %s', pid)
+        self.log.debug('Running on pid {0}', pid)
         with open(conf.PIDFILE, 'w') as pidfile:
             pidfile.write(pid)
 
@@ -132,13 +135,13 @@ class WolfServer(object):
         try:
             request = json.loads(request_str)
         except ValueError:
-            self.log.error('Invalid JSON request: %s', request_str)
+            self.log.error('Invalid JSON request: {0}', request_str)
             raise RequestException(
                 'INVALID_REQUEST',
                 'Unable to decode JSON request.'
             )
 
-        self.log.debug('Got request: %s', request)
+        self.log.debug('Got request: {0}', request)
 
         self.validate_request(request)
 
@@ -152,7 +155,7 @@ class WolfServer(object):
 
         self.validate_response(response)
 
-        self.log.debug('Returning response: %s', response)
+        self.log.debug('Returning response: {0}', response)
         return response
 
 
@@ -185,7 +188,7 @@ def is_running():
 
 
 def start_server():
-    logging.info('Starting wolf server')
+    logbook.info('Starting wolf server')
     server = WolfServer()
     server.setup()
 
@@ -193,7 +196,7 @@ def start_server():
 
 
 def stop_server():
-    logging.info('Stopping wolf server')
+    logbook.info('Stopping wolf server')
     # Send sigint to PIDFILE and let the server gracefully tear down.
     pid = int(open(conf.PIDFILE).read())
     os.kill(pid, signal.SIGINT)
