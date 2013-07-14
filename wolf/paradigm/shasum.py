@@ -57,7 +57,8 @@ class ShasumParadigm(Paradigm):
 class ShasumItem(Base):
     __tablename__ = 'shasum'
 
-    id = Column(String(40), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    sha = Column(String(40))
     owner = Column(Integer, ForeignKey('connection.id'), default=0)
     files = Column(Text)
     created = Column(DateTime, default=datetime.datetime.now)
@@ -66,8 +67,8 @@ class ShasumItem(Base):
 
     log = logbook.Logger('ShasumItem')
 
-    def __init__(self, id, files, owner=0, created=None):
-        self.id = id
+    def __init__(self, sha, files, owner=0, created=None):
+        self.sha = sha
         self.owner = owner
         self.files = files
 
@@ -81,10 +82,9 @@ class ShasumItem(Base):
     def create(path):
         id = path.split('/')[-1]
         ShasumItem.log.debug('Create: {0}', id)
-        path = os.path.abspath(path)
 
-        files = [f for f in os.listdir(path)]
-        files = ','.join(files)
+        path = os.path.abspath(path)
+        files = ','.join(f for f in os.listdir(path))
 
         shasum = ShasumItem(id, files)
         shasum.save()
@@ -94,7 +94,7 @@ class ShasumItem(Base):
         session = Session()
 
         cls = self.__class__
-        res = session.query(cls).filter(cls.id == self.id)
+        res = session.query(cls).filter(cls.sha == self.sha)
         if res.count():
             self.log.debug('{0}: Already in db; skipping', self)
             return
