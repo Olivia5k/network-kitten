@@ -1,19 +1,25 @@
-from setuptools import setup
+from distutils.core import setup
 
 setup(
     name='kitten',
     version='0.1-dev',
-    url='https://github.com/thiderman/kitten-python',
+    url='https://github.com/thiderman/kitten',
     author='Lowe Thiderman',
     author_email='lowe.thiderman@gmail.com',
-    description=('A self-propagating peer-to-peer network.'),
-    license='BSD',
-    entry_points={
-        'console_scripts': [
-            'kitten = kitten:main'
-        ]
-    },
+    description=('A decentralized minimalist build system'),
+    license='MIT',
+    packages=['kitten'],
+    scripts=[
+        'bin/kitten'
+    ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
+        'Environment :: Console',
+        'Operating System :: Unix',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 2',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: System :: Clustering',
+        'Topic :: System :: Networking',
     ],
 )
