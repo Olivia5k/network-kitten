@@ -1,9 +1,9 @@
-Wolf
+Kitten
 ====
 
 Distributed schema based file transfer.
 
-To put it simple, wolf is a peer-to-peer file transfer protocol. It differs from
+To put it simple, kitten is a peer-to-peer file transfer protocol. It differs from
 other similar projects in that it is completely decentralized, has a schema
 based grouping of what it considers to be transferable items, and has a high
 focus on usability.

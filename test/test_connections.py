@@ -1,5 +1,5 @@
-from wolf import db
-from wolf.connections import Connection
+from kitten import db
+from kitten.connections import Connection
 
 
 class TestConnection(object):

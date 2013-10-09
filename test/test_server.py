@@ -7,11 +7,11 @@ import zmq
 from mock import MagicMock, patch, call
 from test import utils
 
-from wolf import server
-from wolf.server import WolfServer
-from wolf.server import RequestException
-from wolf.server import setup_parser
-from wolf.server import execute_parser
+from kitten import server
+from kitten.server import KittenServer
+from kitten.server import RequestException
+from kitten.server import setup_parser
+from kitten.server import execute_parser
 
 
 class MockParadigm(object):
@@ -23,7 +23,7 @@ class MockParadigm(object):
 
 class TestServerIntegration(object):
     def setup_method(self, method):
-        self.server = WolfServer()
+        self.server = KittenServer()
         self.server.paradigms = {
             'mock': MockParadigm()
         }
@@ -86,14 +86,14 @@ class TestServerArgparserIntegration(object):
         self.server = MagicMock()
         self.ns = MagicMock()
 
-    @patch.object(server, 'WolfServer')
+    @patch.object(server, 'KittenServer')
     def test_execute_parser_start_server(self, WS):
         self.ns.server_command = 'start'
-        self.WolfServer = WS
-        self.WolfServer.return_value = self.server
+        self.KittenServer = WS
+        self.KittenServer.return_value = self.server
         execute_parser(self.ns)
 
-        assert self.WolfServer.called
+        assert self.KittenServer.called
         assert self.server.listen_forever.called
 
     @patch('os.kill')
@@ -110,7 +110,7 @@ class TestServerArgparserIntegration(object):
 
 class TestServerSetupIntegration(object):
     def setup_method(self, method):
-        self.server = WolfServer()
+        self.server = KittenServer()
         self.server.setup_paradigms = MagicMock()
         self.server.setup_signals = MagicMock()
         self.server.setup_pidfile = MagicMock()
@@ -130,7 +130,7 @@ class TestServerSetupIntegration(object):
 
 class TestServerSetupUnits(object):
     def setup_method(self, method):
-        self.server = WolfServer()
+        self.server = KittenServer()
 
     def test_setup_paradigms(self):
         pmock = MagicMock()
@@ -147,7 +147,7 @@ class TestServerSetupUnits(object):
         assert signal.call_args_list[0] == call(2, self.server.signal_handler)
         assert signal.call_args_list[1] == call(15, self.server.signal_handler)
 
-    @patch('wolf.conf.PIDFILE')
+    @patch('kitten.conf.PIDFILE')
     @patch('os.getpid')
     def test_setup_pidfile(self, getpid, pidfile):
         pid = 13337
@@ -165,7 +165,7 @@ class TestServerSetupUnits(object):
 
 class TestServerSignalHandling(object):
     def setup_method(self, method):
-        self.server = WolfServer()
+        self.server = KittenServer()
         self.server.teardown = MagicMock()
 
     def test_signal_handler_calls_teardown(self):
@@ -175,7 +175,7 @@ class TestServerSignalHandling(object):
 
 class TestServerTeardownIntegration(object):
     def setup_method(self, method):
-        self.server = WolfServer()
+        self.server = KittenServer()
         self.server.teardown_pidfile = MagicMock()
 
     def test_teardown_when_not_torn_down(self):
@@ -195,9 +195,9 @@ class TestServerTeardownIntegration(object):
 
 class TestServerTeardownUnits(object):
     def setup_method(self, method):
-        self.server = WolfServer()
+        self.server = KittenServer()
 
-    @patch('wolf.conf.PIDFILE')
+    @patch('kitten.conf.PIDFILE')
     @patch('os.remove')
     def test_teardown_pidfile(self, remove, pidfile):
         self.server.teardown_pidfile()
@@ -206,7 +206,7 @@ class TestServerTeardownUnits(object):
 
 class TestServerSocket(object):
     def setup_method(self, method):
-        self.server = WolfServer()
+        self.server = KittenServer()
 
     @patch('zmq.Context')
     def test_get_socket(self, Context):
@@ -223,7 +223,7 @@ class TestServerSocket(object):
 
 class TestServerSocketListener(object):
     def setup_method(self, method):
-        self.server = WolfServer()
+        self.server = KittenServer()
         self.server.handle_request = MagicMock()
         self.socket = MagicMock()
 
@@ -266,7 +266,7 @@ class TestServerSocketListener(object):
 
 
 class TestServerUtils(object):
-    @patch('wolf.conf.PIDFILE')
+    @patch('kitten.conf.PIDFILE')
     @patch('os.path.isfile')
     def test_is_running(self, isfile, pidfile):
         server.is_running()

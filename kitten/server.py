@@ -5,9 +5,9 @@ import zmq
 import jsonschema
 import logbook
 
-from wolf import conf
-from wolf.paradigm.shasum import ShasumParadigm
-from wolf.validation import validate
+from kitten import conf
+from kitten.paradigm.shasum import ShasumParadigm
+from kitten.validation import validate
 
 
 class RequestException(Exception):
@@ -19,8 +19,8 @@ class RequestException(Exception):
         return "{0}: {1}".format(self.code, self.message)
 
 
-class WolfServer(object):
-    log = logbook.Logger('WolfServer')
+class KittenServer(object):
+    log = logbook.Logger('KittenServer')
     torn = False
 
     def __init__(self):
@@ -216,15 +216,15 @@ def is_running():
 
 
 def start_server():
-    logbook.info('Starting wolf server')
-    server = WolfServer()
+    logbook.info('Starting kitten server')
+    server = KittenServer()
     server.setup()
 
     server.listen_forever()
 
 
 def stop_server():
-    logbook.info('Stopping wolf server')
+    logbook.info('Stopping kitten server')
     # Send sigint to PIDFILE and let the server gracefully tear down.
     pid = int(open(conf.PIDFILE).read())
     os.kill(pid, signal.SIGINT)

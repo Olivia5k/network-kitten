@@ -1,16 +1,16 @@
 from setuptools import setup
 
 setup(
-    name='wolf',
+    name='kitten',
     version='0.1-dev',
-    url='https://github.com/thiderman/wolf-python',
+    url='https://github.com/thiderman/kitten-python',
     author='Lowe Thiderman',
     author_email='lowe.thiderman@gmail.com',
     description=('A self-propagating peer-to-peer network.'),
     license='BSD',
     entry_points={
         'console_scripts': [
-            'wolf = wolf:main'
+            'kitten = kitten:main'
         ]
     },
     classifiers=[

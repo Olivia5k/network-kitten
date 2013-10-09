@@ -2,11 +2,11 @@ import json
 import logbook
 import zmq
 
-from wolf.conf import PORT
+from kitten.conf import PORT
 
 
-class WolfClient(object):
-    log = logbook.Logger('WolfClient')
+class KittenClient(object):
+    log = logbook.Logger('KittenClient')
 
     def send(self, msg, port=PORT):
         context = zmq.Context()
@@ -24,7 +24,7 @@ class WolfClient(object):
 
 def main():
     msg = json.dumps({'paradigm': 'shasum', 'method': 'ping'})
-    WolfClient().send(msg)
+    KittenClient().send(msg)
 
 
 if __name__ == '__main__':

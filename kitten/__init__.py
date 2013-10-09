@@ -3,11 +3,11 @@ import argparse
 import logging
 import subprocess as sub
 
-from wolf import conf
-from wolf import db
-from wolf import connections
-from wolf import server
-from wolf import log
+from kitten import conf
+from kitten import db
+from kitten import connections
+from kitten import server
+from kitten import log
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
     log.setup_color()
 
     # Base of argument parser
-    parser = argparse.ArgumentParser('wolf')
+    parser = argparse.ArgumentParser('kitten')
     subparsers = parser.add_subparsers(help="Core commands", dest="command")
 
     # Executors dict. All setup_parser functions are required add to this dict

@@ -9,7 +9,7 @@ Currently, the returned strings can be between 6 (bad_ox) and 45
 about 500k different choices.
 
 
-TODO: Split from the wolf project and upload as a standalone project to pypi
+TODO: Split from the kitten project and upload as a standalone project to pypi
 and github.
 
 """

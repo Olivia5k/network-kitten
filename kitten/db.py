@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from wolf import conf
+from kitten import conf
 
 db = conf.DB_URI
 
@@ -19,7 +19,7 @@ Base = declarative_base()
 
 
 def setup_core():
-    from wolf import connections
+    from kitten import connections
 
     connections.Connection.metadata.bind = engine
     connections.Connection.metadata.create_all()

@@ -38,9 +38,9 @@ def find_paradigms():
 
     """
 
-    # Find all top-level modules that are a part of "wolf".
+    # Find all top-level modules that are a part of "kitten".
     modules = pkgutil.iter_modules()
-    modules = filter(lambda x: x[1] == 'wolf', modules)
+    modules = filter(lambda x: x[1] == 'kitten', modules)
 
     roots = [x[0].path for x in modules]
 

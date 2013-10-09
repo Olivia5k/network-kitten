@@ -6,9 +6,9 @@ from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import String
 
-from wolf.db import Session
-from wolf.db import Base
-from wolf.util.names import random_name
+from kitten.db import Session
+from kitten.db import Base
+from kitten.util.names import random_name
 
 
 class Connection(Base):

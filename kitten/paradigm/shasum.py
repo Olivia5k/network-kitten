@@ -10,12 +10,12 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
 
-from wolf import conf
-from wolf.db import Base
-from wolf.db import Session
-from wolf.db import engine
-from wolf.util import mkdir
-from wolf.paradigm.core import Paradigm
+from kitten import conf
+from kitten.db import Base
+from kitten.db import Session
+from kitten.db import engine
+from kitten.util import mkdir
+from kitten.paradigm.core import Paradigm
 
 TEMP_BASE = os.path.join(conf.CACHE_DIR, 'shasum')
 
