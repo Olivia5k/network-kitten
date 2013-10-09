@@ -1,15 +1,39 @@
-# Project related
-wolf.egg-info
+*.py[cod]
 
-# Python defaults
-*.py[cox]
+# C extensions
+*.so
 
-# Virtualenv
-bin/
-data/
-include/
-lib/
-man/
-build/
-share/
-pip-install.log
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+include
+share
+MANIFEST
+data
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
