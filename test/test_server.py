@@ -267,7 +267,7 @@ class TestServerSocketListener(object):
 
 class TestServerUtils(object):
     @patch('wolf.conf.PIDFILE')
-    @patch('os.remove')
-    def test_is_running(self, remove, pidfile):
+    @patch('os.path.isfile')
+    def test_is_running(self, isfile, pidfile):
         server.is_running()
-        assert remove.called_once_with(pidfile)
+        assert isfile.called_once_with(pidfile)
