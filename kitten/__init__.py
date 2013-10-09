@@ -52,3 +52,7 @@ def main():
     ret = subparsers.executors[ns.command](ns)
 
     sys.exit(ret)
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
