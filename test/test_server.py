@@ -87,9 +87,9 @@ class TestServerArgparserIntegration(object):
         self.ns = MagicMock()
 
     @patch.object(server, 'KittenServer')
-    def test_execute_parser_start_server(self, WS):
+    def test_execute_parser_start_server(self, KS):
         self.ns.server_command = 'start'
-        self.KittenServer = WS
+        self.KittenServer = KS
         self.KittenServer.return_value = self.server
         execute_parser(self.ns)
 
