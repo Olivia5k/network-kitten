@@ -28,6 +28,11 @@ class Connection(Base):
         self.port = port
         self.display_name = display_name
 
+    def __str__(self):
+        return 'Connection<{0.display_name}: {0.address}:{0.port}>'.format(
+            self,
+        )
+
     @staticmethod
     def create(address, port, display_name=None):
         session = Session()
@@ -40,6 +45,11 @@ class Connection(Base):
         session.commit()
         session.close()
 
+    @staticmethod
+    def list():
+        session = Session()
+        return session.query(Connection).all()
+
 
 def setup_parser(subparsers):
     con = subparsers.add_parser(
@@ -47,7 +57,9 @@ def setup_parser(subparsers):
         help="List, add or modify connections."
     )
 
-    sub = con.add_subparsers(help='Sub-commands', dest="sub")
+    sub = con.add_subparsers(help='Connection commands', dest="sub")
+
+    list_ = sub.add_parser('list', help='List connections (default)')
 
     add = sub.add_parser('add', help='Add a connection')
     add.add_argument('ip', type=str)
@@ -63,4 +75,9 @@ def setup_parser(subparsers):
 
 
 def execute_parser(ns):
-    pass
+    if not ns.sub or ns.sub == "list":
+        for x, con in enumerate(Connection.list(), start=1):
+            print('{0}: {1}'.format(x, con))
+
+    elif ns.sub == 'add':
+        Connection.create(ns.ip, ns.port, ns.display_name)
