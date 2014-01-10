@@ -35,6 +35,8 @@ class Connection(Base):
 
     @staticmethod
     def create(address, port, display_name=None):
+        # TODO: Connect to the desination before adding it. Also add flag to
+        # disable such a check.
         session = Session()
 
         if not display_name:
@@ -60,6 +62,7 @@ def setup_parser(subparsers):
     sub = con.add_subparsers(help='Connection commands', dest="sub")
 
     list_ = sub.add_parser('list', help='List connections (default)')
+    list_.add_argument('--filter', type=str)
 
     add = sub.add_parser('add', help='Add a connection')
     add.add_argument('ip', type=str)
@@ -76,7 +79,13 @@ def setup_parser(subparsers):
 
 def execute_parser(ns):
     if not ns.sub or ns.sub == "list":
-        for x, con in enumerate(Connection.list(), start=1):
+        src = Connection.list()
+
+        # If a filter is specified, apply it to the display name
+        if ns.filter:
+            src = list(filter(lambda x: ns.filter in x.display_name, src))
+
+        for x, con in enumerate(src, start=1):
             print('{0}: {1}'.format(x, con))
 
     elif ns.sub == 'add':
