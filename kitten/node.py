@@ -61,7 +61,12 @@ def setup_parser(subparsers):
 
     add = sub.add_parser('add', help='Add a node')
     add.add_argument('address', type=str)
-    add.add_argument('--display_name', type=str, metavar="<name>")
+    add.add_argument(
+        'display_name',
+        type=str,
+        metavar="<display_name>",
+        nargs="?",
+    )
 
     remove = sub.add_parser('remove', help='Remove a node')
     remove.add_argument('name', type=str)
