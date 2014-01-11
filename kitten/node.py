@@ -28,7 +28,7 @@ class Node(Base):
         self.port = port
         self.display_name = display_name
 
-    def __str__(self):
+    def __str__(self):  # pragma: nocover
         return 'Node<{0.display_name}: {0.address}:{0.port}>'.format(
             self,
         )
@@ -52,6 +52,9 @@ class Node(Base):
         session = Session()
         return session.query(Node).all()
 
+    def repr(self):  # pragma: nocover
+        return self.__str__()
+
 
 def setup_parser(subparsers):
     con = subparsers.add_parser('node', help="List, add or modify nodes.")
@@ -72,17 +75,19 @@ def setup_parser(subparsers):
         'node': execute_parser
     })
 
+    return subparsers
+
 
 def execute_parser(ns):
     if not ns.sub or ns.sub == "list":
         src = Node.list()
 
         # If a filter is specified, apply it to the display name
-        if hasattr(ns, 'filter'):
+        if hasattr(ns, 'filter') and ns.filter:
             src = list(filter(lambda x: ns.filter in x.display_name, src))
 
-        for x, con in enumerate(src, start=1):
-            print('{0}: {1}'.format(x, con))
+        for con in src:
+            print(con.repr())
 
     elif ns.sub == 'add':
         Node.create(ns.ip, ns.port, ns.display_name)
