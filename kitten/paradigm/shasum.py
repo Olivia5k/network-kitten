@@ -59,7 +59,7 @@ class ShasumItem(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     sha = Column(String(40))
-    owner = Column(Integer, ForeignKey('connection.id'), default=0)
+    owner = Column(Integer, ForeignKey('node.id'), default=0)
     files = Column(Text)
     created = Column(DateTime, default=datetime.datetime.now)
 

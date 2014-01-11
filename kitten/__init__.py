@@ -5,7 +5,7 @@ import subprocess as sub
 
 from kitten import conf
 from kitten import db
-from kitten import connections
+from kitten import node
 from kitten import server
 from kitten import log
 
@@ -25,7 +25,7 @@ def main():
 
     # Run core argparse setups.
     server.setup_parser(subparsers)
-    connections.setup_parser(subparsers)
+    node.setup_parser(subparsers)
 
     # Parse the current command line.
     ns = parser.parse_args()

@@ -11,8 +11,8 @@ from kitten.db import Base
 from kitten.util.names import random_name
 
 
-class Connection(Base):
-    __tablename__ = 'connection'
+class Node(Base):
+    __tablename__ = 'node'
 
     id = Column(Integer(), primary_key=True)
     address = Column(String(255))
@@ -21,7 +21,7 @@ class Connection(Base):
     created = Column(DateTime, default=datetime.datetime.now)
     last_seen = Column(DateTime, default=datetime.datetime.now)
 
-    log = logbook.Logger('Connection')
+    log = logbook.Logger('Node')
 
     def __init__(self, address, port, display_name=None):
         self.address = address
@@ -29,7 +29,7 @@ class Connection(Base):
         self.display_name = display_name
 
     def __str__(self):
-        return 'Connection<{0.display_name}: {0.address}:{0.port}>'.format(
+        return 'Node<{0.display_name}: {0.address}:{0.port}>'.format(
             self,
         )
 
@@ -42,7 +42,7 @@ class Connection(Base):
         if not display_name:
             display_name = random_name()
 
-        con = Connection(address, port, display_name)
+        con = Node(address, port, display_name)
         session.add(con)
         session.commit()
         session.close()
@@ -50,43 +50,39 @@ class Connection(Base):
     @staticmethod
     def list():
         session = Session()
-        return session.query(Connection).all()
+        return session.query(Node).all()
 
 
 def setup_parser(subparsers):
-    con = subparsers.add_parser(
-        'connection',
-        help="List, add or modify connections."
-    )
+    con = subparsers.add_parser('node', help="List, add or modify nodes.")
+    sub = con.add_subparsers(help='Node commands', dest="sub")
 
-    sub = con.add_subparsers(help='Connection commands', dest="sub")
-
-    list_ = sub.add_parser('list', help='List connections (default)')
+    list_ = sub.add_parser('list', help='List nodes (default)')
     list_.add_argument('--filter', type=str)
 
-    add = sub.add_parser('add', help='Add a connection')
+    add = sub.add_parser('add', help='Add a node')
     add.add_argument('ip', type=str)
     add.add_argument('port', type=int)
     add.add_argument('--display_name', type=str, metavar="<name>")
 
-    remove = sub.add_parser('remove', help='Remove a connection')
+    remove = sub.add_parser('remove', help='Remove a node')
     remove.add_argument('name', type=str)
 
     subparsers.executors.update({
-        'connection': execute_parser
+        'node': execute_parser
     })
 
 
 def execute_parser(ns):
     if not ns.sub or ns.sub == "list":
-        src = Connection.list()
+        src = Node.list()
 
         # If a filter is specified, apply it to the display name
-        if ns.filter:
+        if hasattr(ns, 'filter'):
             src = list(filter(lambda x: ns.filter in x.display_name, src))
 
         for x, con in enumerate(src, start=1):
             print('{0}: {1}'.format(x, con))
 
     elif ns.sub == 'add':
-        Connection.create(ns.ip, ns.port, ns.display_name)
+        Node.create(ns.ip, ns.port, ns.display_name)

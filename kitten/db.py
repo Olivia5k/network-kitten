@@ -19,7 +19,7 @@ Base = declarative_base()
 
 
 def setup_core():
-    from kitten import connections
+    from kitten import node
 
-    connections.Connection.metadata.bind = engine
-    connections.Connection.metadata.create_all()
+    node.Node.metadata.bind = engine
+    node.Node.metadata.create_all()
