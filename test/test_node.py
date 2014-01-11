@@ -7,24 +7,23 @@ from mock import MagicMock, patch
 
 
 class NodeUtilMixin(object):
-    def add_node(self, address, port, display_name):
-        node = Node(address, port, display_name)
+    def add_node(self, address, display_name):
+        node = Node(address, display_name)
         self.session.add(node)
         self.session.commit()
 
 
 class TestNodeCreation(MockDatabaseMixin):
     def test_create_node(self):
-        Node.create('localhost', 65535)
+        Node.create('localhost:65535')
 
         res = self.session.query(Node).all()
 
         assert len(res) == 1
-        assert res[0].address == "localhost"
-        assert res[0].port == 65535
+        assert res[0].address == "localhost:65535"
 
     def test_create_node_with_display_name(self):
-        Node.create('localhost', 65535, 'gooby')
+        Node.create('localhost', 'gooby')
 
         res = self.session.query(Node).all()
 
@@ -65,8 +64,8 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
         self.ns.sub = 'list'
         self.ns.filter = None
 
-        self.add_node('add', 'port', 'foo')
-        self.add_node('add', 'port', 'bar')
+        self.add_node('address', 'foo')
+        self.add_node('address', 'bar')
 
         execute_parser(self.ns)
 
@@ -77,8 +76,8 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
         self.ns.sub = 'list'
         self.ns.filter = 'bar'
 
-        self.add_node('add', 'port', 'foo')
-        self.add_node('add', 'port', 'bar')
+        self.add_node('address', 'foo')
+        self.add_node('address', 'bar')
 
         execute_parser(self.ns)
 
@@ -86,19 +85,16 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
 
     @patch.object(Node, 'repr')
     def test_execute_add_argument(self, r):
-        ip = '123.123.123.123'
-        port = 1234
+        address = '123.123.123.123:4567'
         display_name = 'hax0r tester'
 
         self.ns.sub = 'add'
-        self.ns.ip = ip
-        self.ns.port = port
+        self.ns.address = address
         self.ns.display_name = display_name
 
         execute_parser(self.ns)
 
         res = self.session.query(Node).all()
         assert len(res) == 1
-        assert res[0].address == ip
-        assert res[0].port == port
+        assert res[0].address == address
         assert res[0].display_name == display_name
