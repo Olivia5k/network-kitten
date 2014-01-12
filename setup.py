@@ -3,6 +3,23 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
 
+install_require = [
+    'Logbook',
+    'SQLAlchemy',
+    'jsonschema',
+    'pyzmq',
+]
+
+tests_require = [
+    'cov-core',
+    'coverage',
+    'mock',
+    'py',
+    'pytest',
+    'pytest-cov',
+]
+
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -14,6 +31,7 @@ class PyTest(TestCommand):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
+
 setup(
     name='kitten',
     version='0.2.1',
@@ -23,6 +41,8 @@ setup(
     description=('A decentralized minimalist build system'),
     license='MIT',
     packages=['kitten'],
+    install_requires=install_require,
+    tests_require=tests_require,
     entry_points={
         'console_scripts': [
             'kitten = kitten:main',
