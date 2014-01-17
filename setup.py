@@ -11,12 +11,9 @@ install_require = [
 ]
 
 tests_require = [
-    'cov-core',
-    'coverage',
-    'mock',
-    'py',
     'pytest',
     'pytest-cov',
+    'mock',
 ]
 
 
