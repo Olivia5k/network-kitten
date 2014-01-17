@@ -40,6 +40,7 @@ setup(
     packages=['kitten'],
     install_requires=install_require,
     tests_require=tests_require,
+    zip_safe=False,
     entry_points={
         'console_scripts': [
             'kitten = kitten:main',
