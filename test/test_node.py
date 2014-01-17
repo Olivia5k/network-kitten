@@ -14,7 +14,9 @@ class NodeUtilMixin(object):
 
 
 class TestNodeCreation(MockDatabaseMixin):
-    def test_create_node(self):
+    @patch.object(Node, 'ping')
+    def test_create_node(self, p):
+        p.return_value = True
         Node.create('localhost:65535')
 
         res = self.session.query(Node).all()
@@ -22,7 +24,9 @@ class TestNodeCreation(MockDatabaseMixin):
         assert len(res) == 1
         assert res[0].address == "localhost:65535"
 
-    def test_create_node_with_display_name(self):
+    @patch.object(Node, 'ping')
+    def test_create_node_with_display_name(self, p):
+        p.return_value = True
         Node.create('localhost', 'gooby')
 
         res = self.session.query(Node).all()
@@ -83,14 +87,17 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
 
         assert r.call_count == 1
 
+    @patch.object(Node, 'ping')
     @patch.object(Node, 'repr')
-    def test_execute_add_argument(self, r):
+    def test_execute_add_argument(self, r, p):
         address = '123.123.123.123:4567'
         display_name = 'hax0r tester'
 
         self.ns.sub = 'add'
         self.ns.address = address
         self.ns.display_name = display_name
+
+        p.return_value = True
 
         execute_parser(self.ns)
 
