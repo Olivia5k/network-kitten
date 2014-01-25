@@ -7,8 +7,8 @@ from mock import MagicMock, patch
 
 
 class NodeUtilMixin(object):
-    def add_node(self, address, display_name):
-        node = Node(address, display_name)
+    def add_node(self, address):
+        node = Node(address)
         self.session.add(node)
         self.session.commit()
 
@@ -24,23 +24,13 @@ class TestNodeCreation(MockDatabaseMixin):
         assert len(res) == 1
         assert res[0].address == "localhost:65535"
 
-    @patch.object(Node, 'ping')
-    def test_create_node_with_display_name(self, p):
-        p.return_value = True
-        Node.create('localhost', 'gooby')
-
-        res = self.session.query(Node).all()
-
-        assert len(res) == 1
-        assert res[0].display_name == 'gooby'
-
 
 class TestNodeArgparser(object):
     def setup_method(self, method):
         self.subparsers = MagicMock()
 
     def test_setup_parser_sets_up_node_namespace(self):
-        ret = setup_parser(self.subparsers)
+        setup_parser(self.subparsers)
         assert self.subparsers.add_parser.call_args[0][0] == 'node'
 
     def test_setup_parser_sets_up_executor(self):
@@ -65,8 +55,8 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
         self.ns.sub = 'list'
         self.ns.filter = None
 
-        self.add_node('address', 'foo')
-        self.add_node('address', 'bar')
+        self.add_node('foo')
+        self.add_node('bar')
 
         execute_parser(self.ns)
 
@@ -77,8 +67,8 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
         self.ns.sub = 'list'
         self.ns.filter = 'bar'
 
-        self.add_node('address', 'foo')
-        self.add_node('address', 'bar')
+        self.add_node('foo')
+        self.add_node('bar')
 
         execute_parser(self.ns)
 
@@ -88,11 +78,9 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
     @patch.object(Node, 'repr')
     def test_execute_add_argument(self, r, p):
         address = '123.123.123.123:4567'
-        display_name = 'hax0r tester'
 
         self.ns.sub = 'add'
         self.ns.address = address
-        self.ns.display_name = display_name
 
         p.return_value = True
 
@@ -101,4 +89,3 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
         res = self.session.query(Node).all()
         assert len(res) == 1
         assert res[0].address == address
-        assert res[0].display_name == display_name

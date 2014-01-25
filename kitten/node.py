@@ -9,7 +9,6 @@ from sqlalchemy import String
 from kitten.db import Session
 from kitten.db import Base
 from kitten.util.ui import TerminalUI
-from kitten.util.names import random_name
 
 
 class Node(Base):
@@ -17,22 +16,20 @@ class Node(Base):
 
     id = Column(Integer(), primary_key=True)
     address = Column(String(255))
-    display_name = Column(String(50))
     created = Column(DateTime, default=datetime.datetime.now)
     last_seen = Column(DateTime, default=datetime.datetime.now)
     ui = TerminalUI()
 
     log = logbook.Logger('Node')
 
-    def __init__(self, address, display_name=None):
+    def __init__(self, address):
         self.address = address
-        self.display_name = display_name
 
     def __str__(self):  # pragma: nocover
-        return 'Node<{0.display_name}: {0.address}>'.format(self)
+        return 'Node<{0.address}>'.format(self)
 
     @staticmethod
-    def create(address, display_name=None):
+    def create(address):
         """
         Create a new node
 
@@ -40,10 +37,7 @@ class Node(Base):
 
         """
 
-        if not display_name:
-            display_name = random_name()
-
-        con = Node(address, display_name)
+        con = Node(address)
 
         if con.ping():
             session = Session()
@@ -98,12 +92,6 @@ def setup_parser(subparsers):
 
     add = sub.add_parser('add', help='Add a node')
     add.add_argument('address', type=str)
-    add.add_argument(
-        'display_name',
-        type=str,
-        metavar="<display_name>",
-        nargs="?",
-    )
 
     remove = sub.add_parser('remove', help='Remove a node')
     remove.add_argument('name', type=str)
@@ -117,10 +105,10 @@ def execute_parser(ns):
 
         # If a filter is specified, apply it to the display name
         if hasattr(ns, 'filter') and ns.filter:
-            src = list(filter(lambda x: ns.filter in x.display_name, src))
+            src = list(filter(lambda x: ns.filter in x.address, src))
 
         for con in src:
             print(con.repr())
 
     elif ns.sub == 'add':
-        Node.create(ns.address, ns.display_name)
+        Node.create(ns.address)
