@@ -53,14 +53,11 @@ class TestServerArgparser(object):
         ret = setup_parser(self.subparsers)
         # Only check the first argument; a change to the help text should not
         # make the test fail.
-        assert ret.add_parser.call_args[0][0] == 'server'
+        assert self.subparsers.add_parser.call_args[0][0] == 'server'
 
     def test_setup_parser_sets_up_executor(self):
-        self.subparsers.executors = {}
         ret = setup_parser(self.subparsers)
-        assert ret.executors == {
-            'server': execute_parser
-        }
+        assert ret is execute_parser
 
 
 class TestServerArgparserSubcommandSetup(object):

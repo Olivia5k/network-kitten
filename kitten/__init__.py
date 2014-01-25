@@ -2,6 +2,7 @@ import sys
 import argparse
 import logging
 import subprocess as sub
+import errno
 
 from kitten import conf
 from kitten import db
@@ -21,11 +22,10 @@ def main():
     # Executors dict. All setup_parser functions are required add to this dict
     # with a key on parsers and value as functions that will handle the
     # resulting argparse namespace.
-    subparsers.executors = {}
-
-    # Run core argparse setups.
-    server.setup_parser(subparsers)
-    node.setup_parser(subparsers)
+    executors = {
+        'server': server.setup_parser(subparsers),
+        'node': node.setup_parser(subparsers),
+    }
 
     # Parse the current command line.
     ns = parser.parse_args()
@@ -33,7 +33,7 @@ def main():
     # No command specified. Print help and exit.
     if not ns.command:
         parser.print_help()
-        sys.exit(0)
+        sys.exit(errno.EINVAL)
 
     # Create application specific directories.
     conf.create_dirs()
@@ -49,6 +49,6 @@ def main():
 
     # Send the namespace to the command handler so that it can actually execute
     # the specified command. Should return numeric exit code or None.
-    ret = subparsers.executors[ns.command](ns)
+    ret = executors[ns.command](ns)
 
     sys.exit(ret)

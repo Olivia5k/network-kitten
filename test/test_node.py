@@ -41,14 +41,11 @@ class TestNodeArgparser(object):
 
     def test_setup_parser_sets_up_node_namespace(self):
         ret = setup_parser(self.subparsers)
-        assert ret.add_parser.call_args[0][0] == 'node'
+        assert self.subparsers.add_parser.call_args[0][0] == 'node'
 
     def test_setup_parser_sets_up_executor(self):
-        self.subparsers.executors = {}
         ret = setup_parser(self.subparsers)
-        assert ret.executors == {
-            'node': execute_parser
-        }
+        assert ret is execute_parser
 
 
 class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):

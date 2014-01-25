@@ -195,11 +195,7 @@ def setup_parser(subparsers):
     sub.add_parser('start', help='Start the server (default)')
     sub.add_parser('stop', help='Stop the server')
 
-    subparsers.executors.update({
-        'server': execute_parser
-    })
-
-    return subparsers
+    return execute_parser
 
 
 def execute_parser(ns):

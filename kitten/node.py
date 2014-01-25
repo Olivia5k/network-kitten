@@ -108,11 +108,7 @@ def setup_parser(subparsers):
     remove = sub.add_parser('remove', help='Remove a node')
     remove.add_argument('name', type=str)
 
-    subparsers.executors.update({
-        'node': execute_parser
-    })
-
-    return subparsers
+    return execute_parser
 
 
 def execute_parser(ns):
