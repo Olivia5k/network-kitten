@@ -9,7 +9,7 @@ from kitten import conf
 db = conf.DB_URI
 
 # If running tests, use an in memory database
-if sys.argv[0].endswith('py.test'):
+if sys.argv[0].endswith('py.test') or sys.argv == ['setup.py', 'test']:
     db = 'sqlite://'
 
 # Globals. All tables and queries should use these.
