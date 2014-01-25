@@ -46,7 +46,7 @@ class Node(Base):
             session.close()
             con.ui.success('Created')
         else:
-            con.ui.success('Could not connect to node. Node not added.')
+            con.ui.error('Could not connect to node. Node not added.')
 
     @staticmethod
     def list():
