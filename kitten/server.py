@@ -193,8 +193,7 @@ def setup_parser(subparsers):
 
 def execute_parser(ns):
     if ns.server_command == "stop":
-        stop_server()
-        return 0
+        return stop_server()
     else:
         start_server()
 
@@ -213,7 +212,16 @@ def start_server():
 
 
 def stop_server():
+    if not os.path.exists(conf.PIDFILE):
+        logbook.error(
+            'No pidfile found; kitten server is probably not running',
+        )
+        return 1
+
     logbook.info('Stopping kitten server')
     # Send sigint to PIDFILE and let the server gracefully tear down.
-    pid = int(open(conf.PIDFILE).read())
-    os.kill(pid, signal.SIGINT)
+    with open(conf.PIDFILE) as f:
+        pid = int(f.read())
+        os.kill(pid, signal.SIGINT)
+
+    return 0

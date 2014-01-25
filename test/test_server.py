@@ -4,7 +4,7 @@ import pytest
 import signal
 import zmq
 
-from mock import MagicMock, patch, call
+from mock import MagicMock, patch, call, mock_open
 from test import utils
 
 from kitten import server
@@ -50,7 +50,7 @@ class TestServerArgparser(object):
         self.subparsers = MagicMock()
 
     def test_setup_parser_sets_up_server_namespace(self):
-        ret = setup_parser(self.subparsers)
+        setup_parser(self.subparsers)
         # Only check the first argument; a change to the help text should not
         # make the test fail.
         assert self.subparsers.add_parser.call_args[0][0] == 'server'
@@ -93,16 +93,35 @@ class TestServerArgparserIntegration(object):
         assert self.KittenServer.called
         assert self.server.listen_forever.called
 
+    @patch('os.path.exists')
     @patch('os.kill')
-    @patch('builtins.open')
-    def test_execute_parser_stop_server(self, op, kill):
+    def test_execute_parser_stop_server(self, kill, exists):
         pid = 9999
         self.ns.server_command = 'stop'
-        op.return_value.read.return_value = str(pid)
-        ret = execute_parser(self.ns)
+        exists.return_value = True
+
+        fake = mock_open(read_data=str(pid))
+        with patch('builtins.open', fake, create=True):
+            ret = execute_parser(self.ns)
 
         kill.assert_called_once_with(pid, signal.SIGINT)
         assert ret == 0
+
+    @patch('os.path.exists')
+    @patch('os.kill')
+    def test_execute_parser_stop_server_no_pidfile(self, kill, exists):
+        """
+        This will effectively check if it works to stop the server when it is
+        not running.
+
+        """
+
+        self.ns.server_command = 'stop'
+        exists.return_value = False
+        ret = execute_parser(self.ns)
+
+        kill.call_count == 0
+        assert ret == 1
 
 
 class TestServerSetupIntegration(object):
