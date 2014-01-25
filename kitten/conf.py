@@ -28,6 +28,6 @@ PIDFILE = os.path.join(CACHE_DIR, 'server.pid')
 DB_URI = 'sqlite:///{0}/kitten.db'.format(DATA_DIR)
 
 
-def create_dirs():
+def create_dirs():  # pragma: nocover
     for path in (DATA_DIR, CACHE_DIR, LOG_DIR):
         util.mkdir(path)

@@ -18,7 +18,7 @@ Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
 
-def setup_core():
+def setup_core():  # pragma: nocover
     from kitten import node
 
     node.Node.metadata.bind = engine

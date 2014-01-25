@@ -2,7 +2,7 @@ import os
 import errno
 
 
-def mkdir(path):
+def mkdir(path):  # pragma: nocover
     """
     Safe implementation of 'mkdir -p'
 
