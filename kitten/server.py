@@ -6,7 +6,6 @@ import jsonschema
 import logbook
 
 from kitten import conf
-from kitten.paradigm.shasum import ShasumParadigm
 from kitten.validation import validate
 
 
@@ -170,12 +169,6 @@ class KittenServer(object):
         self.log.info('Listening on {0}', host)
 
         return socket
-
-    def get_paradigms(self):  # pragma: nocover
-        self.log.info('Loading paradigms')
-        return {
-            'shasum': ShasumParadigm()
-        }
 
     def validate_request(self, request):
         self.log.info('Validating request...')
