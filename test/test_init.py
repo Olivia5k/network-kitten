@@ -1,7 +1,9 @@
+import sys
 import pytest
 import errno
 
 from kitten import main
+from kitten import version
 from mock import patch
 from mock import MagicMock
 
@@ -97,3 +99,29 @@ class TestMain(object):
         assert db.setup_core.called
 
         assert popen.called
+
+
+class TestVersion(object):
+    @patch('os.path.exists')
+    def test_version_no_git_dir(self, exists):
+        exists.return_value = False
+        ret = version()
+        assert ret == 'unknown'
+
+    @patch('subprocess.Popen')
+    def test_version(self, popen):
+        """
+        I really don't like the bytes going on here :/
+
+        """
+
+        ver = '1.2.3-dirty'
+        current = bytes(ver, 'utf-8') if sys.version_info > (3,) else ver
+
+        proc = MagicMock()
+        proc.communicate.return_value = [current, '']
+        popen.return_value = proc
+
+        ret = version()
+
+        assert ret == ver

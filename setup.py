@@ -2,6 +2,11 @@ import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
+try:
+    import kitten
+except ImportError:
+    kitten = None
+
 
 install_require = [
     'Logbook',
@@ -31,7 +36,7 @@ class PyTest(TestCommand):
 
 setup(
     name='kitten',
-    version='0.2.1',
+    version=kitten.version() if kitten else 'unknown',
     url='https://github.com/thiderman/kitten',
     author='Lowe Thiderman',
     author_email='lowe.thiderman@gmail.com',

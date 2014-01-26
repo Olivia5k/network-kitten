@@ -1,14 +1,45 @@
 import sys
+import os
 import argparse
 import logging
 import subprocess as sub
 import errno
+
+from os.path import join
+from os.path import dirname
 
 from kitten import conf
 from kitten import db
 from kitten import node
 from kitten import server
 from kitten import log
+
+
+def version():
+    """
+    Grab dynamic version info from git tags
+
+    """
+
+    git_dir = join(dirname(dirname(__file__)), '.git')
+    if not os.path.exists(git_dir):
+        logging.error(
+            'git directory not found\n'
+            'kitten uses git tags to determine versions\n'
+            'Please get the source at https://github.com/thiderman/kitten'
+        )
+        return 'unknown'
+
+    cmd = 'git --git-dir={0} describe --tag --abbrev --always --dirty'.format(
+        git_dir,
+    )
+    proc = sub.Popen(cmd.split(), stdout=sub.PIPE, stderr=sub.PIPE)
+    ret = proc.communicate()[0]
+
+    if sys.version_info > (3,):
+        ret = ret.decode()
+
+    return ret
 
 
 def main():
