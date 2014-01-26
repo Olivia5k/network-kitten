@@ -101,7 +101,7 @@ class TestServerArgparserIntegration(object):
         exists.return_value = True
 
         fake = mock_open(read_data=str(pid))
-        with patch('builtins.open', fake, create=True):
+        with patch(utils.builtin('open'), fake, create=True):
             ret = execute_parser(self.ns)
 
         kill.assert_called_once_with(pid, signal.SIGINT)
@@ -169,14 +169,11 @@ class TestServerSetupUnits(object):
         pid = 13337
         getpid.return_value = pid
 
-        op = utils.mock_open()
-        with patch('builtins.open', op):
+        fake = mock_open()
+        with patch(utils.builtin('open'), fake):
             self.server.setup_pidfile()
 
-        # This first one does not work for some reason. No matter; it's the
-        # second one that is important.
-        # assert op.called_once_with(pidfile)
-        assert op.return_value.write.called_once_with(str(pid))
+        assert fake.return_value.write.called_once_with(str(pid))
 
 
 class TestServerSignalHandling(object):
