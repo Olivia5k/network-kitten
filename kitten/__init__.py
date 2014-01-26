@@ -1,6 +1,5 @@
 import sys
 import os
-import time
 import argparse
 import logging
 import subprocess as sub
@@ -29,7 +28,6 @@ def version():
             'kitten uses git tags to determine versions\n'
             'Please get the source at https://github.com/thiderman/kitten\n'
         )
-        time.sleep(3)
         return 'unknown'
 
     cmd = 'git --git-dir={0} describe --tag --abbrev --always --dirty'.format(
