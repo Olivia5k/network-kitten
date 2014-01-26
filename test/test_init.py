@@ -110,11 +110,6 @@ class TestVersion(object):
 
     @patch('subprocess.Popen')
     def test_version(self, popen):
-        """
-        I really don't like the bytes going on here :/
-
-        """
-
         ver = '1.2.3-dirty'
         current = bytes(ver, 'utf-8') if sys.version_info > (3,) else ver
 
@@ -125,3 +120,16 @@ class TestVersion(object):
         ret = version()
 
         assert ret == ver
+
+    @patch('subprocess.Popen')
+    def test_version_whitespace_stripped(self, popen):
+        ver = '1.2.3-dirty\n'
+        current = bytes(ver, 'utf-8') if sys.version_info > (3,) else ver
+
+        proc = MagicMock()
+        proc.communicate.return_value = [current, '']
+        popen.return_value = proc
+
+        ret = version()
+
+        assert ret == ver.strip()

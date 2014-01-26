@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 import argparse
 import logging
 import subprocess as sub
@@ -26,8 +27,9 @@ def version():
         logging.error(
             'git directory not found\n'
             'kitten uses git tags to determine versions\n'
-            'Please get the source at https://github.com/thiderman/kitten'
+            'Please get the source at https://github.com/thiderman/kitten\n'
         )
+        time.sleep(3)
         return 'unknown'
 
     cmd = 'git --git-dir={0} describe --tag --abbrev --always --dirty'.format(
@@ -39,6 +41,7 @@ def version():
     if sys.version_info > (3,):
         ret = ret.decode()
 
+    ret = ret.strip()
     return ret
 
 
