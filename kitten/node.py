@@ -9,6 +9,7 @@ from sqlalchemy import String
 from kitten.db import Session
 from kitten.db import Base
 from kitten.util.ui import TerminalUI
+from kitten.client import KittenClient
 
 
 class Node(Base):
@@ -20,6 +21,7 @@ class Node(Base):
     last_seen = Column(DateTime, default=datetime.datetime.now)
     ui = TerminalUI()
 
+    client = KittenClient()
     log = logbook.Logger('Node')
 
     def __init__(self, address):
@@ -64,8 +66,13 @@ class Node(Base):
 
         """
 
-        request = {'paradigm': 'core'} + data
-        response = self.what(request)
+        request = {
+            'paradigm': 'node',
+            'address': self.address,
+        }
+        request.update(data)
+
+        response = self.client.send(request)
         return response
 
     def ping(self):
@@ -77,7 +84,7 @@ class Node(Base):
         """
 
         response = self.message({'method': 'ping'})
-        return False
+        return response['success']
 
     def repr(self):  # pragma: nocover
         return self.__str__()

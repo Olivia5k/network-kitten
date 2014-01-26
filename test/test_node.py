@@ -24,6 +24,15 @@ class TestNodeCreation(MockDatabaseMixin):
         assert len(res) == 1
         assert res[0].address == "localhost:65535"
 
+    @patch.object(Node, 'ping')
+    def test_create_node_ping_fails(self, p):
+        p.return_value = False
+        Node.create('localhost:65535')
+
+        res = self.session.query(Node).all()
+
+        assert len(res) == 0
+
 
 class TestNodeArgparser(object):
     def setup_method(self, method):
@@ -89,3 +98,22 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
         res = self.session.query(Node).all()
         assert len(res) == 1
         assert res[0].address == address
+
+
+class TestNodeMessaging(object):
+    def setup_method(self, method):
+        self.node = Node('thunderboltsandlightning.com')
+        self.node.client = MagicMock()
+
+    def test_messaging(self):
+        request = {
+            'powermetal': True,
+        }
+
+        self.node.message(request)
+
+        assert self.node.client.send.called_once_with({
+            'paradigm': 'node',
+            'address': self.node.address,
+            'powermetal': True,
+        })
