@@ -6,7 +6,7 @@ import jsonschema
 import logbook
 
 from kitten import conf
-from kitten.validation import validate
+from kitten.validation import Validator
 import kitten.node
 
 
@@ -23,8 +23,9 @@ class KittenServer(object):
     log = logbook.Logger('KittenServer')
     torn = False
 
-    def __init__(self):
+    def __init__(self, validator):
         self.paradigms = {}
+        self.validator = validator
 
     def listen_forever(self, port=conf.PORT):  # pragma: nocover
         """
@@ -181,10 +182,11 @@ class KittenServer(object):
 
     def validate_request(self, request):
         self.log.info('Validating request...')
-        validate(request, 'core')
+        self.validator.request(request, self.paradigms)
 
     def validate_response(self, response):
         self.log.info('Validating response...')
+        # self.validator.response(request, self.paradigms)
 
 
 def setup_parser(subparsers):
@@ -214,7 +216,9 @@ def is_running():
 
 def start_server():
     logbook.info('Starting kitten server')
-    server = KittenServer()
+
+    validator = Validator()
+    server = KittenServer(validator)
     server.setup()
 
     server.listen_forever()

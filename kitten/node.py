@@ -13,6 +13,7 @@ from kitten.db import Base
 from kitten.util.ui import TerminalUI
 from kitten.client import KittenClient
 from kitten.server import RequestException
+from kitten.validation import Validator
 from jsonschema.exceptions import ValidationError
 
 
@@ -102,7 +103,13 @@ class Node(Base):
         return self.__str__()
 
 
+class NodeValidator(Validator):
+    pass
+
+
 class NodeParadigm(object):
+    validator = NodeValidator()
+
     def setup(self):  # pragma: nocover
         pass
 
