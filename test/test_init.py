@@ -36,7 +36,8 @@ class TestMain(object):
         with pytest.raises(SystemExit) as exc:
             main()
 
-        assert exc.value.code == errno.EINVAL
+        code = exc.value.code if sys.version_info >= (2, 7) else exc.value
+        assert code == errno.EINVAL
         assert log.setup_color.called
         assert self.parser.print_help.called
 
@@ -62,7 +63,8 @@ class TestMain(object):
         with pytest.raises(SystemExit) as exc:
             main()
 
-        assert exc.value.code == exit
+        code = exc.value.code if sys.version_info > (2, 7) else exc.value
+        assert code == exit
         assert log.setup_color.called
         assert conf.create_dirs.called
         assert db.setup_core.called
@@ -93,7 +95,8 @@ class TestMain(object):
         with pytest.raises(SystemExit) as exc:
             main()
 
-        assert exc.value.code == exit
+        code = exc.value.code if sys.version_info > (2, 7) else exc.value
+        assert code == exit
         assert log.setup_color.called
         assert conf.create_dirs.called
         assert db.setup_core.called
