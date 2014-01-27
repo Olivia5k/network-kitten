@@ -10,6 +10,9 @@ CORE_SCHEMA = {
         'method': {
             'type': 'string',
         },
+        'address': {
+            'type': 'string',
+        },
     },
     'additionalProperties': False,
 }
@@ -17,6 +20,7 @@ CORE_SCHEMA = {
 VALIDATORS = {
     'core': CORE_SCHEMA
 }
+
 
 def validate(request, schema_name):
     jsonschema.validate(request, VALIDATORS[schema_name])
