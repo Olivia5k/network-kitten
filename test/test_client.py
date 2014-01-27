@@ -1,19 +1,14 @@
-from kitten.client import KittenClient
-
 import mock
+from test import MockKittenClientMixin
 
 
-class TestClientMessaging(object):
+class TestClientMessaging(MockKittenClientMixin):
     def setup_method(self, method):
-        self.client = KittenClient()
-        self.context = mock.MagicMock()
-        self.socket = mock.MagicMock()
-        self.context.socket.return_value = self.socket
+        super(TestClientMessaging, self).setup_method(method)
 
     @mock.patch('zmq.Context')
     def test_simple_send(self, ctx):
         ctx.return_value = self.context
-        print(self.socket)
 
         msg = '{}'
         self.client.send(msg)
