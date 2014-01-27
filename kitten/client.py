@@ -2,16 +2,14 @@ import json
 import logbook
 import zmq
 
-from kitten.conf import PORT
-
 
 class KittenClient(object):
     log = logbook.Logger('KittenClient')
 
-    def send(self, msg, port=PORT):
+    def send(self, address, msg):
         context = zmq.Context()
         socket = context.socket(zmq.REQ)
-        host = 'tcp://localhost:{0}'.format(port)
+        host = 'tcp://{0}'.format(address)
         socket.connect(host)
 
         msg = json.dumps(msg)
@@ -23,4 +21,7 @@ class KittenClient(object):
         self.log.info(msg)
 
         ret = json.loads(msg)
+
+        socket.close()
+
         return ret

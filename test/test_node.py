@@ -1,3 +1,4 @@
+from kitten.conf import DEFAULT_PORT
 from kitten.node import Node
 from kitten.node import NodeParadigm
 from kitten.node import setup_parser
@@ -28,6 +29,16 @@ class TestNodeCreation(MockDatabaseMixin):
 
         assert len(res) == 1
         assert res[0].address == "localhost:65535"
+
+    @patch.object(Node, 'ping')
+    def test_create_node_without_port_gets_default_port(self, p):
+        p.return_value = True
+        Node.create('localhost')
+
+        res = self.session.query(Node).all()
+
+        assert len(res) == 1
+        assert res[0].address == "localhost:{0}".format(DEFAULT_PORT)
 
     @patch.object(Node, 'ping')
     def test_create_node_ping_fails(self, p):

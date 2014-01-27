@@ -1,3 +1,4 @@
+import re
 import datetime
 import logbook
 
@@ -6,6 +7,7 @@ from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import String
 
+from kitten import conf
 from kitten.db import Session
 from kitten.db import Base
 from kitten.util.ui import TerminalUI
@@ -41,6 +43,10 @@ class Node(Base):
 
         """
 
+        # If no port is specified, make sure to add the default.
+        if not re.search(r':\d+', address):
+            address += ':{0}'.format(conf.DEFAULT_PORT)
+
         con = Node(address)
 
         if con.ping():
@@ -74,7 +80,7 @@ class Node(Base):
         }
         request.update(data)
 
-        response = self.client.send(request)
+        response = self.client.send(self.address, request)
         return response
 
     def ping(self):

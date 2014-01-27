@@ -11,7 +11,7 @@ class TestClientMessaging(MockKittenClientMixin):
         ctx.return_value = self.context
 
         self.socket.recv_unicode.return_value = '{"hehe": true}'
-        ret = self.client.send({})
+        ret = self.client.send('hehe:1234', {})
 
         assert ret == {'hehe': True}
         assert self.socket.connect.called

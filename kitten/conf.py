@@ -3,6 +3,7 @@ import os
 from kitten import util
 
 PORT = 5555
+DEFAULT_PORT = 5555
 
 
 def get_dir(xdg_key, fallback):
