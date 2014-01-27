@@ -10,6 +10,8 @@ from kitten.db import Session
 from kitten.db import Base
 from kitten.util.ui import TerminalUI
 from kitten.client import KittenClient
+from kitten.server import RequestException
+from jsonschema.exceptions import ValidationError
 
 
 class Node(Base):
@@ -77,17 +79,36 @@ class Node(Base):
 
     def ping(self):
         """
-        Make a quick ping heartbeat
+        Send a quick ping heartbeat to the node
 
         Returns boolean success.
 
         """
 
-        response = self.message({'method': 'ping'})
-        return response['success']
+        try:
+            response = self.message({'method': 'ping'})
+            return response['pong']
+        except (KeyError, RequestException, ValidationError):
+            self.log.exception('Ping failed')
+            return False
 
     def repr(self):  # pragma: nocover
         return self.__str__()
+
+
+class NodeParadigm(object):
+    def setup(self):  # pragma: nocover
+        pass
+
+    def ping(self, request):
+        """
+        Handle a remote ping request
+
+        """
+
+        return {
+            'pong': True
+        }
 
 
 def setup_parser(subparsers):

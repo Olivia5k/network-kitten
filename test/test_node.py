@@ -1,9 +1,14 @@
 from kitten.node import Node
+from kitten.node import NodeParadigm
 from kitten.node import setup_parser
 from kitten.node import execute_parser
 from test import MockDatabaseMixin
+from test import MockKittenClientMixin
 
 from mock import MagicMock, patch
+
+from kitten.server import RequestException
+from jsonschema.exceptions import ValidationError
 
 
 class NodeUtilMixin(object):
@@ -117,3 +122,50 @@ class TestNodeMessaging(object):
             'address': self.node.address,
             'powermetal': True,
         })
+
+
+class TestNodeMessagingIntegration(MockKittenClientMixin):
+    def setup_method(self, method):
+        self.host = 'tesseract.localnet:61214'
+        self.node = Node(self.host)
+        super(TestNodeMessagingIntegration, self).setup_method(method)
+
+    @patch('zmq.Context')
+    def test_ping(self, ctx):
+        ctx.return_value = self.context
+        self.socket.recv_unicode.return_value = '{"pong": true}'
+        ret = self.node.ping()
+
+        assert ret is True
+        assert self.socket.connect.called_once_with(self.host)
+        assert self.socket.send_unicode.called
+
+    @patch.object(Node, 'message')
+    def test_ping_keyerror(self, message):
+        message.side_effect = KeyError
+        ret = self.node.ping()
+
+        assert ret is False
+
+    @patch.object(Node, 'message')
+    def test_ping_requesterror(self, message):
+        message.side_effect = RequestException('code', 'msg')
+        ret = self.node.ping()
+
+        assert ret is False
+
+    @patch.object(Node, 'message')
+    def test_ping_validationerror(self, message):
+        message.side_effect = ValidationError('msg')
+        ret = self.node.ping()
+
+        assert ret is False
+
+
+class TestNodeParadigmPing(object):
+    def setup_method(self, method):
+        self.paradigm = NodeParadigm()
+
+    def test_ping_response(self):
+        ret = self.paradigm.ping({})
+        assert ret == {'pong': True}

@@ -7,6 +7,7 @@ import logbook
 
 from kitten import conf
 from kitten.validation import validate
+import kitten.node
 
 
 class RequestException(Exception):
@@ -58,17 +59,19 @@ class KittenServer(object):
             # Send the request for processing and handle any errors
             response = self.handle_request(request_str)
         except RequestException as e:
+            self.log.exception('Request exception')
             response = {
                 'code': e.code,
                 'message': e.message,
             }
         except jsonschema.exceptions.ValidationError as e:
+            self.log.exception('Validation error')
             response = {
                 'code': 'VALIDATION_ERROR',
                 'message': e.message,
             }
         except Exception as e:
-            self.log.exception('Request exception')
+            self.log.exception('General exception')
             response = {
                 'code': 'UNKNOWN_ERROR',
                 'message': str(e),
@@ -169,6 +172,12 @@ class KittenServer(object):
         self.log.info('Listening on {0}', host)
 
         return socket
+
+    def get_paradigms(self):  # pragma: nocover
+        self.log.info('Loading paradigms')
+        return {
+            'node': kitten.node.NodeParadigm(),
+        }
 
     def validate_request(self, request):
         self.log.info('Validating request...')
