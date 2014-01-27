@@ -14,12 +14,16 @@ class KittenClient(object):
         host = 'tcp://localhost:{0}'.format(port)
         socket.connect(host)
 
+        msg = json.dumps(msg)
         self.log.info('Sending request on {1}: {0}', msg, host)
         socket.send_unicode(msg)
 
         self.log.info('Waiting for reply')
         msg = socket.recv_unicode()
         self.log.info(msg)
+
+        ret = json.loads(msg)
+        return ret
 
 
 def main():  # pragma: nocover

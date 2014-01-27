@@ -10,9 +10,11 @@ class TestClientMessaging(MockKittenClientMixin):
     def test_simple_send(self, ctx):
         ctx.return_value = self.context
 
-        msg = '{}'
-        self.client.send(msg)
+        self.socket.recv_unicode.return_value = '{"hehe": true}'
+        ret = self.client.send({})
 
+        assert ret == {'hehe': True}
         assert self.socket.connect.called
-        assert self.socket.send_unicode.call_args_list[0] == mock.call(msg)
+        assert self.socket.send_unicode.called_once_with('{}')
+        assert self.socket.recv_unicode.called
         assert self.socket.recv_unicode.called
