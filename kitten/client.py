@@ -24,12 +24,3 @@ class KittenClient(object):
 
         ret = json.loads(msg)
         return ret
-
-
-def main():  # pragma: nocover
-    msg = json.dumps({'paradigm': 'shasum', 'method': 'ping'})
-    KittenClient().send(msg)
-
-
-if __name__ == '__main__':  # pragma: nocover
-    main()
