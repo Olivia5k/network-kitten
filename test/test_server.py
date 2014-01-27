@@ -163,9 +163,8 @@ class TestServerSetupUnits(object):
         assert signal.call_args_list[0] == call(2, self.server.signal_handler)
         assert signal.call_args_list[1] == call(15, self.server.signal_handler)
 
-    @patch('kitten.conf.PIDFILE')
     @patch('os.getpid')
-    def test_setup_pidfile(self, getpid, pidfile):
+    def test_setup_pidfile(self, getpid):
         pid = 13337
         getpid.return_value = pid
 
