@@ -5,8 +5,7 @@ import signal
 import zmq
 
 from mock import MagicMock, patch, call, mock_open
-from test import utils
-from test import MockValidator
+from test.utils import MockValidator, builtin
 
 from kitten import server
 from kitten.server import KittenServer
@@ -106,7 +105,7 @@ class TestServerArgparserIntegration(object):
         exists.return_value = True
 
         fake = mock_open(read_data=str(pid))
-        with patch(utils.builtin('open'), fake, create=True):
+        with patch(builtin('open'), fake, create=True):
             ret = execute_parser(self.ns)
 
         kill.assert_called_once_with(pid, signal.SIGINT)
@@ -174,7 +173,7 @@ class TestServerSetupUnits(object):
         getpid.return_value = pid
 
         fake = mock_open()
-        with patch(utils.builtin('open'), fake):
+        with patch(builtin('open'), fake):
             self.server.setup_pidfile()
 
         assert fake.return_value.write.called_once_with(str(pid))

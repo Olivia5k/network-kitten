@@ -1,6 +1,6 @@
 import pytest
 import mock
-from test import MockKittenClientMixin
+from test.utils import MockKittenClientMixin
 
 from kitten.server import RequestError
 

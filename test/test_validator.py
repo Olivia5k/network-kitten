@@ -4,7 +4,7 @@ from kitten.validation import Validator
 from jsonschema.exceptions import ValidationError
 
 from mock import MagicMock
-from test import MockValidator
+from test.utils import MockValidator
 
 
 class TestValidatorGetMethod(object):

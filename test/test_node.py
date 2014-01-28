@@ -6,8 +6,8 @@ from kitten.node import NodeParadigm
 from kitten.node import NodeValidator
 from kitten.node import setup_parser
 from kitten.node import execute_parser
-from test import MockDatabaseMixin
-from test import MockKittenClientMixin
+from test.utils import MockDatabaseMixin
+from test.utils import MockKittenClientMixin
 
 from mock import MagicMock, patch
 
