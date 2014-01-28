@@ -2,7 +2,7 @@ import json
 import logbook
 import zmq
 
-from kitten.server import RequestException
+from kitten.server import RequestError
 
 
 class KittenClient(object):
@@ -23,7 +23,7 @@ class KittenClient(object):
             msg = 'Timeout after {0}ms'.format(self.timeout)
             self.log.error(msg)
             self.close(socket)
-            raise RequestException('TIMEOUT', msg)
+            raise RequestError('TIMEOUT', msg)
 
         response = ''.join(t[0].recv_unicode() for t in events)
         ret = json.loads(response)

@@ -10,7 +10,7 @@ from test import MockValidator
 
 from kitten import server
 from kitten.server import KittenServer
-from kitten.server import RequestException
+from kitten.server import RequestError
 from kitten.server import setup_parser
 from kitten.server import execute_parser
 from kitten.validation import Validator
@@ -41,7 +41,7 @@ class TestServerIntegration(object):
 
     def test_handle_request_invalid_json(self):
         request = '{'
-        with pytest.raises(RequestException):
+        with pytest.raises(RequestError):
             self.server.handle_request(request)
 
     def test_handle_request_invalid_validation(self):
@@ -252,7 +252,7 @@ class TestServerSocketListener(object):
 
     def test_request_exception(self):
         code, msg = 'TEST_ERROR', '#yolo'
-        self.server.handle_request.side_effect = RequestException(code, msg)
+        self.server.handle_request.side_effect = RequestError(code, msg)
 
         ret = self.server.listen(self.socket)
         assert ret, "Loop halted because of exception when it shouldn't"

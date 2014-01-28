@@ -12,7 +12,7 @@ from kitten.db import Session
 from kitten.db import Base
 from kitten.util.ui import TerminalUI
 from kitten.client import KittenClient
-from kitten.server import RequestException
+from kitten.server import RequestError
 from kitten.validation import Validator
 from jsonschema.exceptions import ValidationError
 
@@ -95,7 +95,7 @@ class Node(Base):
         try:
             response = self.message({'method': 'ping'})
             return response['pong']
-        except (KeyError, RequestException, ValidationError):
+        except (KeyError, RequestError, ValidationError):
             self.log.exception('Ping failed')
             return False
 

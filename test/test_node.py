@@ -11,7 +11,7 @@ from test import MockKittenClientMixin
 
 from mock import MagicMock, patch
 
-from kitten.server import RequestException
+from kitten.server import RequestError
 from jsonschema.exceptions import ValidationError
 
 
@@ -167,7 +167,7 @@ class TestNodeMessagingIntegration(MockKittenClientMixin):
 
     @patch.object(Node, 'message')
     def test_ping_requesterror(self, message):
-        message.side_effect = RequestException('code', 'msg')
+        message.side_effect = RequestError('code', 'msg')
         ret = self.node.ping()
 
         assert ret is False

@@ -2,7 +2,7 @@ import pytest
 import mock
 from test import MockKittenClientMixin
 
-from kitten.server import RequestException
+from kitten.server import RequestError
 
 
 class TestClientMessaging(MockKittenClientMixin):
@@ -31,5 +31,5 @@ class TestClientMessaging(MockKittenClientMixin):
         self.socket.recv_unicode.return_value = '{"hehe": true}'
         poller.return_value.poll.return_value = []
 
-        with pytest.raises(RequestException):
+        with pytest.raises(RequestError):
             self.client.send('hehe:1234', {})

@@ -10,7 +10,7 @@ from kitten.validation import Validator
 import kitten.node
 
 
-class RequestException(Exception):
+class RequestError(Exception):
     def __init__(self, code, message):
         self.code = code
         self.message = message
@@ -59,7 +59,7 @@ class KittenServer(object):
         try:
             # Send the request for processing and handle any errors
             response = self.handle_request(request_str)
-        except RequestException as e:
+        except RequestError as e:
             self.log.exception('Request exception')
             response = {
                 'code': e.code,
@@ -104,7 +104,7 @@ class KittenServer(object):
             request = json.loads(request_str)
         except ValueError:
             self.log.error('Invalid JSON request: {0}', request_str)
-            raise RequestException(
+            raise RequestError(
                 'INVALID_REQUEST',
                 'Unable to decode JSON request.'
             )
