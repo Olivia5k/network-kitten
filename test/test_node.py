@@ -144,10 +144,14 @@ class TestNodeMessagingIntegration(MockKittenClientMixin):
         self.node = Node(self.host)
         super(TestNodeMessagingIntegration, self).setup_method(method)
 
+    @patch('zmq.Poller')
     @patch('zmq.Context')
-    def test_ping(self, ctx):
+    def test_ping(self, ctx, poller):
         ctx.return_value = self.context
+
         self.socket.recv_unicode.return_value = '{"pong": true}'
+        poller.return_value.poll.return_value = [(self.socket, 1)]
+
         ret = self.node.ping()
 
         assert ret is True
