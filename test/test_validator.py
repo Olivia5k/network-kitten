@@ -73,3 +73,13 @@ class TestValidatorRequest(object):
         self.paradigm.validator.method_request = inner
 
         self.validator.request(self.request, self.paradigms)
+
+    def test_failing_example(self):
+        def inner():
+            return {'field': {'type': 'number'}}
+
+        self.request['field'] = 'helo i am string not number'
+        self.paradigm.validator.method_request = inner
+
+        with pytest.raises(ValidationError):
+            self.validator.request(self.request, self.paradigms)
