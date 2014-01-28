@@ -6,6 +6,11 @@ from jsonschema.exceptions import ValidationError
 from mock import MagicMock
 
 
+class MockValidator(Validator):
+    def method_request(self):
+        return {'field': {'type': 'number'}}
+
+
 class TestValidatorGetMethod(object):
     def setup_method(self, method):
         self.validator = Validator()
@@ -38,13 +43,15 @@ class TestValidatorGetMethod(object):
 
 class TestValidatorRequest(object):
     def setup_method(self, method):
-        self.validator = Validator()
+        self.validator = MockValidator()
+        self.paradigm = MagicMock()
+        self.paradigm.validator = self.validator
+        self.paradigms = {'paradigm': self.paradigm}
+
         self.request = {
             'paradigm': 'paradigm',
             'method': 'method',
         }
-        self.paradigm = MagicMock()
-        self.paradigms = {'paradigm': self.paradigm}
 
     def test_no_paradigm(self):
         self.request['paradigm '] = "404"
@@ -58,7 +65,6 @@ class TestValidatorRequest(object):
     def test_no_method(self):
         method = 'fail'
         self.request['method'] = method
-        self.paradigm.validator.fail_request = None
 
         with pytest.raises(ValidationError) as exc:
             self.validator.request(self.request, self.paradigms)
@@ -66,20 +72,11 @@ class TestValidatorRequest(object):
         assert method in exc.value.message
 
     def test_working_example(self):
-        def inner():
-            return {'field': {'type': 'number'}}
-
         self.request['field'] = 1000
-        self.paradigm.validator.method_request = inner
-
         self.validator.request(self.request, self.paradigms)
 
     def test_failing_example(self):
-        def inner():
-            return {'field': {'type': 'number'}}
-
         self.request['field'] = 'helo i am string not number'
-        self.paradigm.validator.method_request = inner
 
         with pytest.raises(ValidationError):
             self.validator.request(self.request, self.paradigms)
