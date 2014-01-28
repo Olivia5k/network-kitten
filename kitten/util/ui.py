@@ -1,6 +1,6 @@
 class TerminalUI(object):
     def success(self, message):
-        pass
+        print('S: {0}'.format(message))
 
     def error(self, message):
-        pass
+        print('E: {0}'.format(message))
