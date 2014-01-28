@@ -33,7 +33,7 @@ class Node(Base):
         self.address = address
 
     def __str__(self):  # pragma: nocover
-        return 'Node<{0.address}>'.format(self)
+        return '<Node: {0.address}>'.format(self)
 
     @staticmethod
     def create(address):
@@ -44,20 +44,27 @@ class Node(Base):
 
         """
 
+        session = Session()
+
         # If no port is specified, make sure to add the default.
         if not re.search(r':\d+', address):
             address += ':{0}'.format(conf.DEFAULT_PORT)
 
         con = Node(address)
+        q = session.query(Node).filter(Node.address == address)
+
+        if session.query(q.exists()).scalar():
+            con.ui.error('Node {0} already exists.'.format(address))
+            return
 
         if con.ping():
-            session = Session()
             session.add(con)
             session.commit()
-            session.close()
             con.ui.success('Created')
         else:
             con.ui.error('Could not connect to node. Node not added.')
+
+        session.close()
 
     @staticmethod
     def list():

@@ -22,16 +22,20 @@ class NodeUtilMixin(object):
         self.session.commit()
 
 
-class TestNodeCreation(MockDatabaseMixin):
+class TestNodeCreation(MockDatabaseMixin, NodeUtilMixin):
+    def setup_method(self, method):
+        self.address = 'localhost:63161'
+        super(TestNodeCreation, self).setup_method(method)
+
     @patch.object(Node, 'ping')
     def test_create_node(self, p):
         p.return_value = True
-        Node.create('localhost:65535')
+        Node.create(self.address)
 
         res = self.session.query(Node).all()
 
         assert len(res) == 1
-        assert res[0].address == "localhost:65535"
+        assert res[0].address == self.address
 
     @patch.object(Node, 'ping')
     def test_create_node_without_port_gets_default_port(self, p):
@@ -46,11 +50,21 @@ class TestNodeCreation(MockDatabaseMixin):
     @patch.object(Node, 'ping')
     def test_create_node_ping_fails(self, p):
         p.return_value = False
-        Node.create('localhost:65535')
+        Node.create(self.address)
 
         res = self.session.query(Node).all()
 
         assert len(res) == 0
+
+    @patch.object(Node, 'ping')
+    def test_create_node_already_exists(self, p):
+        address = self.address
+
+        self.add_node(address)
+        Node.create(address)
+
+        res = self.session.query(Node).all()
+        assert len(res) == 1
 
 
 class TestNodeArgparser(object):
