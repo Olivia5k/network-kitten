@@ -61,7 +61,16 @@ class Validator(object):
         return data['paradigm'], data['method']
 
     def get_known_methods(self):
-        pass
+        """
+        Get known validation methods by finding all methods ending in _request.
+
+        """
+
+        ret = []
+        for item in dir(self):
+            if item.endswith('_request') and callable(getattr(self, item)):
+                ret.append(item[:-8])
+        return ret
 
     def _csl(self, iterable):
         """

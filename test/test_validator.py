@@ -80,3 +80,33 @@ class TestValidatorRequest(object):
 
         with pytest.raises(ValidationError):
             self.validator.request(self.request, self.paradigms)
+
+
+class TestValidatorGetKnownMethods(object):
+    def setup_method(self, method):
+        self.validator = MockValidator()
+
+    def test_get_methods(self):
+        ret = self.validator.get_known_methods()
+
+        assert len(ret) == 1
+        assert 'method' in ret
+
+    def test_get_methods_add_one_more(self):
+        def inner(self):
+            pass
+
+        self.validator.hehe_request = inner
+        ret = self.validator.get_known_methods()
+
+        assert len(ret) == 2
+        assert 'method' in ret
+        assert 'hehe' in ret
+
+    def test_get_methods_add_one_more_not_callable(self):
+        self.validator.hehe_request = 'ohnoes'
+        ret = self.validator.get_known_methods()
+
+        assert len(ret) == 1
+        assert 'method' in ret
+        assert 'hehe' not in ret
