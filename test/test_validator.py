@@ -4,11 +4,7 @@ from kitten.validation import Validator
 from jsonschema.exceptions import ValidationError
 
 from mock import MagicMock
-
-
-class MockValidator(Validator):
-    def method_request(self):
-        return {'field': {'type': 'number'}}
+from test import MockValidator
 
 
 class TestValidatorGetMethod(object):

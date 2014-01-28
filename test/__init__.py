@@ -1,10 +1,16 @@
 from kitten import db
 from kitten.client import KittenClient
+from kitten.validation import Validator
 
 import mock
 
 
 class MockDatabaseMixin(object):
+    """
+    Setup self.session as a SQLalchemy Session and clear tables after each run
+
+    """
+
     def setup_method(self, method):
         db.Base.metadata.create_all(db.engine)
         self.session = db.Session()
@@ -29,3 +35,13 @@ class MockKittenClientMixin(object):
         self.context = mock.MagicMock()
         self.socket = mock.MagicMock()
         self.context.socket.return_value = self.socket
+
+
+class MockValidator(Validator):
+    """
+    Fake validator that only has one field as okay
+
+    """
+
+    def method_request(self):
+        return {'field': {'type': 'number'}}
