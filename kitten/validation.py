@@ -40,7 +40,7 @@ class Validator(object):
                 "Method '{0}()' not found in '{1}'. Choices are: {2}".format(
                     method_name,
                     paradigm_name,
-                    self._csl(paradigm.get_known_methods())
+                    self._csl(validator.get_known_methods())
                 )
             )
 
