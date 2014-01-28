@@ -6,16 +6,20 @@ import zmq
 
 from mock import MagicMock, patch, call, mock_open
 from test import utils
+from test import MockValidator
 
 from kitten import server
 from kitten.server import KittenServer
 from kitten.server import RequestException
 from kitten.server import setup_parser
 from kitten.server import execute_parser
+from kitten.validation import Validator
 
 
 class MockParadigm(object):
-    def fake(self, request):
+    validator = MockValidator()
+
+    def method(self, request):
         return {
             'code': 'OK'
         }
@@ -23,13 +27,14 @@ class MockParadigm(object):
 
 class TestServerIntegration(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.validator = Validator()
+        self.server = KittenServer(self.validator)
         self.server.paradigms = {
             'mock': MockParadigm()
         }
 
     def test_handle_request(self):
-        request = json.dumps({'paradigm': 'mock', 'method': 'fake'})
+        request = json.dumps({'paradigm': 'mock', 'method': 'method'})
         result = self.server.handle_request(request)
 
         assert result == {'code': 'OK'}
@@ -39,7 +44,6 @@ class TestServerIntegration(object):
         with pytest.raises(RequestException):
             self.server.handle_request(request)
 
-    @pytest.mark.xfail  # Until actual validation is back in place
     def test_handle_request_invalid_validation(self):
         request = json.dumps({'hehe': 'fail'})
         with pytest.raises(jsonschema.exceptions.ValidationError):
