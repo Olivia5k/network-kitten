@@ -1,6 +1,9 @@
+import pytest
+
 from kitten.conf import DEFAULT_PORT
 from kitten.node import Node
 from kitten.node import NodeParadigm
+from kitten.node import NodeValidator
 from kitten.node import setup_parser
 from kitten.node import execute_parser
 from test import MockDatabaseMixin
@@ -180,3 +183,24 @@ class TestNodeParadigmPing(object):
     def test_ping_response(self):
         ret = self.paradigm.ping({})
         assert ret == {'pong': True}
+
+
+class TestNodeValidator(object):
+    def setup_method(self, method):
+        self.paradigms = {
+            'node': NodeParadigm(),
+        }
+
+        self.validator = NodeValidator()
+        self.request = {
+            'paradigm': 'node',
+            'method': 'ping',
+        }
+
+    def test_ping_request(self):
+        self.validator.request(self.request, self.paradigms)
+
+    def test_ping_request_extra_field(self):
+        self.request['hehe'] = True
+        with pytest.raises(ValidationError):
+            self.validator.request(self.request, self.paradigms)

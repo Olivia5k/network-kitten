@@ -77,7 +77,7 @@ class Node(Base):
 
         request = {
             'paradigm': 'node',
-            'address': self.address,
+            # 'address': self.address,
         }
         request.update(data)
 
@@ -104,7 +104,8 @@ class Node(Base):
 
 
 class NodeValidator(Validator):
-    pass
+    def ping_request(self):
+        return {}  # Yay no extra fields
 
 
 class NodeParadigm(object):
