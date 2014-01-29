@@ -148,10 +148,6 @@ class TestServerSetupIntegration(object):
         self.server.setup_signals = MagicMock()
         self.server.setup_pidfile = MagicMock()
 
-    def test_full_setup_calls_setup_paradigms(self):
-        self.server.setup()
-        assert self.server.setup_paradigms.called
-
     def test_full_setup_calls_setup_signals(self):
         self.server.setup()
         assert self.server.setup_signals.called
@@ -164,14 +160,6 @@ class TestServerSetupIntegration(object):
 class TestServerSetupUnits(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock())
-
-    def test_setup_paradigms(self):
-        pmock = MagicMock()
-        self.server.get_paradigms = MagicMock()
-        self.server.get_paradigms.return_value = {'mock': pmock}
-
-        self.server.setup_paradigms()
-        assert pmock.setup.called
 
     @patch.object(signal, 'signal')
     def test_setup_signals(self, signal):

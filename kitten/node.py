@@ -32,9 +32,6 @@ class NodeValidator(Validator):
 class NodeParadigm(Paradigm):
     validator = NodeValidator()
 
-    def setup(self):  # pragma: nocover
-        pass
-
     @annotate
     def ping_request(self, request):
         return {}

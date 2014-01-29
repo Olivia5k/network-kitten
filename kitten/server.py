@@ -134,8 +134,6 @@ class KittenServer(object):
 
     def setup_paradigms(self):
         self.paradigms = self.get_paradigms()
-        for paradigm in self.paradigms.values():
-            paradigm.setup()
 
     def setup_signals(self):
         signal.signal(signal.SIGINT, self.signal_handler)
