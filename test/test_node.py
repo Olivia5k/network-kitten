@@ -1,4 +1,5 @@
 import pytest
+import json
 
 from kitten.conf import DEFAULT_PORT
 from kitten.node import Node
@@ -9,7 +10,7 @@ from kitten.node import execute_parser
 from test.utils import MockDatabaseMixin
 from test.utils import MockKittenClientMixin
 
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 from kitten.server import RequestError
 from jsonschema.exceptions import ValidationError
@@ -116,9 +117,10 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
 
         assert r.call_count == 1
 
+    @patch.object(Node, 'message')
     @patch.object(Node, 'ping')
     @patch.object(Node, 'repr')
-    def test_execute_add_argument(self, r, p):
+    def test_execute_add_argument(self, r, p, m):
         address = '123.123.123.123:4567'
 
         self.ns.sub = 'add'
@@ -228,3 +230,53 @@ class TestNodeValidator(object):
         self.request['hehe'] = True
         with pytest.raises(ValidationError):
             self.validator.request(self.request, self.paradigms)
+
+
+class TestNodeSync(MockDatabaseMixin, MockKittenClientMixin):
+    def setup_method(self, method):
+        self.node = Node('lament.toy.factory.com:1234')
+        super(TestNodeSync, self).setup_method(method)
+
+    @patch.object(Node, 'create')
+    @patch('zmq.Poller')
+    @patch('zmq.Context')
+    def test_sync_no_new_nodes(self, ctx, poller, create):
+        ctx.return_value = self.context
+
+        self.socket.recv_unicode.return_value = json.dumps({
+            'method': 'sync',
+            'paradigm': 'node',
+            'nodes': [],
+        })
+        poller.return_value.poll.return_value = [(self.socket, 1)]
+
+        self.node.sync()
+
+        assert self.socket.send_unicode.called_once_with('{"nodes": []}')
+        assert not create.called
+
+    @patch.object(Node, 'create')
+    @patch('zmq.Poller')
+    @patch('zmq.Context')
+    def test_sync_new_nodes(self, ctx, poller, create):
+        ctx.return_value = self.context
+        node = 'node.js'
+
+        self.socket.recv_unicode.return_value = json.dumps({
+            'method': 'sync',
+            'paradigm': 'node',
+            'nodes': [node],
+        })
+        poller.return_value.poll.return_value = [(self.socket, 1)]
+
+        self.node.sync()
+
+        assert self.socket.send_unicode.call_args_list == [call(
+            json.dumps({
+                'nodes': [],
+                'method': 'sync',
+                'paradigm': 'node',
+            })
+        )]
+
+        assert create.call_args_list == [call(node, False)]

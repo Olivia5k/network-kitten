@@ -43,7 +43,7 @@ class KittenClient(object):
 
     def connect(self, address):
         self.context = zmq.Context()
-        socket = self.context.socket(zmq.XREQ)  # XXX: Read up on XREQ
+        socket = self.context.socket(zmq.REQ)
 
         host = 'tcp://{0}'.format(address)
         socket.connect(host)

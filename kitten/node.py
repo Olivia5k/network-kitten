@@ -28,6 +28,26 @@ class NodeValidator(Validator):
             }
         }
 
+    def sync_request(self):
+        return {
+            'nodes': {
+                'type': 'array',
+                'items': {
+                    'type': 'string',
+                },
+            }
+        }
+
+    def sync_response(self):
+        return {
+            'nodes': {
+                'type': 'array',
+                'items': {
+                    'type': 'string',
+                },
+            }
+        }
+
 
 class NodeParadigm(Paradigm):
     validator = NodeValidator()
@@ -40,6 +60,18 @@ class NodeParadigm(Paradigm):
     def ping_response(self, request):
         return {
             'pong': True
+        }
+
+    @annotate
+    def sync_request(self, request):
+        return request
+
+    @annotate
+    def sync_response(self, request):
+        nodes = []
+        # logic
+        return {
+            'nodes': nodes
         }
 
 
@@ -60,8 +92,11 @@ class Node(Base):
     def __str__(self):  # pragma: nocover
         return '<Node: {0.address}>'.format(self)
 
+    def repr(self):  # pragma: nocover
+        return self.__str__()
+
     @staticmethod
-    def create(address):
+    def create(address, sync=False):
         """
         Create a new node
 
@@ -86,6 +121,9 @@ class Node(Base):
             session.add(con)
             session.commit()
             con.log.info('{0} added.'.format(con))
+
+            if sync:
+                con.sync()
         else:
             con.log.error('Could not connect to {0}.'.format(con))
 
@@ -107,6 +145,7 @@ class Node(Base):
 
         """
 
+        # TODO: Move these into the paradigm and create paradigm.send()
         self.paradigm.validator.request(request, {'node': self.paradigm})
         response = self.paradigm.client.send(self.address, request)
         self.paradigm.validator.response(response, {'node': self.paradigm})
@@ -130,8 +169,21 @@ class Node(Base):
             self.log.exception('Ping failed')
             return False
 
-    def repr(self):  # pragma: nocover
-        return self.__str__()
+    def sync(self):
+        """
+        Sync the node list with another node
+
+        """
+
+        nodes = [n.address for n in Node.list()]
+        request = self.paradigm.sync_request({
+            'nodes': nodes,
+        })
+
+        response = self.message(request)
+
+        for address in response['nodes']:
+            Node.create(address, False)
 
 
 def setup_parser(subparsers):
@@ -162,4 +214,4 @@ def execute_parser(ns):
             print(con.repr())
 
     elif ns.sub == 'add':
-        Node.create(ns.address)
+        Node.create(ns.address, True)
