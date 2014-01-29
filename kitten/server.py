@@ -43,6 +43,10 @@ class KittenServer(object):
             while self.listen(socket):
                 pass
 
+        except Exception:
+            # TODO: Move into the loop
+            self.log.exception('Server died.')
+
         finally:
             # This usually means that the server died.
             self.teardown()
