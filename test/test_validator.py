@@ -13,19 +13,13 @@ class TestValidatorGetMethod(object):
 
     def test_get_method_no_paradigm(self):
         request = {'method': 'hehe'}
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(ValidationError):
             self.validator.get_method(request)
-
-        assert 'paradigm' in exc.value.message
-        assert 'method' not in exc.value.message
 
     def test_get_method_no_method(self):
         request = {'paradigm': 'hehe'}
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(ValidationError):
             self.validator.get_method(request)
-
-        assert 'paradigm' not in exc.value.message
-        assert 'method' in exc.value.message
 
     def test_get_method(self):
         p = 'wow'
@@ -85,24 +79,29 @@ class TestValidatorGetKnownMethods(object):
     def test_get_methods(self):
         ret = self.validator.get_known_methods()
 
-        assert len(ret) == 1
-        assert 'method' in ret
+        assert len(ret) == 2
+        assert 'method_request' in ret
+        assert 'method_response' in ret
 
     def test_get_methods_add_one_more(self):
         def inner(self):
             pass
 
         self.validator.hehe_request = inner
+        self.validator.hehe_response = inner
         ret = self.validator.get_known_methods()
 
-        assert len(ret) == 2
-        assert 'method' in ret
-        assert 'hehe' in ret
+        assert len(ret) == 4
+        assert 'method_request' in ret
+        assert 'hehe_request' in ret
+        assert 'method_response' in ret
+        assert 'hehe_response' in ret
 
     def test_get_methods_add_one_more_not_callable(self):
         self.validator.hehe_request = 'ohnoes'
         ret = self.validator.get_known_methods()
 
-        assert len(ret) == 1
-        assert 'method' in ret
-        assert 'hehe' not in ret
+        assert len(ret) == 2
+        assert 'method_request' in ret
+        assert 'method_response' in ret
+        assert 'hehe_request' not in ret

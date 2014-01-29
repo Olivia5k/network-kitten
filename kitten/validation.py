@@ -1,4 +1,7 @@
+import re
 import copy
+import pprint
+
 import jsonschema
 
 from jsonschema.exceptions import ValidationError
@@ -18,7 +21,13 @@ class Validator(object):
         'additionalProperties': False,
     }
 
-    def request(self, request, paradigms):
+    def request(self, *args):
+        self.validate('request', *args)
+
+    def response(self, *args):
+        self.validate('response', *args)
+
+    def validate(self, kind, request, paradigms):
         paradigm_name, method_key = self.get_method(request)
 
         paradigm = paradigms.get(paradigm_name)
@@ -32,7 +41,7 @@ class Validator(object):
             )
 
         validator = paradigm.validator
-        method_name = '{0}_request'.format(method_key)
+        method_name = '{0}_{1}'.format(method_key, kind)
         method = getattr(validator, method_name, None)
 
         if method is None:
@@ -53,23 +62,33 @@ class Validator(object):
         jsonschema.validate(request, schema)
 
     def get_method(self, data):
+        # TODO: Make this method actually return the method, with the
+        # validation from the above.
+        error = None
+
         if 'paradigm' not in data:
-            raise ValidationError("'paradigm' field missing.")
+            error = 'paradigm'
         elif 'method' not in data:
-            raise ValidationError("'method' field missing.")
+            error = 'method'
+
+        if error:
+            msg = ''''{0}' field missing in:\n{1}'''
+            raise ValidationError(msg.format(error, pprint.pformat(data)))
 
         return data['paradigm'], data['method']
 
     def get_known_methods(self):
         """
-        Get known validation methods by finding all methods ending in _request.
+        Get known validation methods by finding all methods ending in _request
+        or _response.
 
         """
 
         ret = []
-        for item in dir(self):
-            if item.endswith('_request') and callable(getattr(self, item)):
-                ret.append(item[:-8])
+        for key in dir(self):
+            item = getattr(self, key)
+            if re.search(r'_(request|response)$', key) and callable(item):
+                ret.append(key)
         return ret
 
     def _csl(self, iterable):

@@ -114,7 +114,7 @@ class KittenServer(object):
         self.validate_request(request)
 
         paradigm_name = request['paradigm']
-        method_name = request['method']
+        method_name = request['method'] + '_request'
 
         paradigm = self.paradigms[paradigm_name]
         method = getattr(paradigm, method_name, None)
@@ -186,7 +186,7 @@ class KittenServer(object):
 
     def validate_response(self, response):
         self.log.info('Validating response...')
-        # self.validator.response(request, self.paradigms)
+        self.validator.response(response, self.paradigms)
 
 
 def setup_parser(subparsers):

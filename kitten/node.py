@@ -10,7 +10,8 @@ from sqlalchemy import String
 from kitten import conf
 from kitten.db import Session
 from kitten.db import Base
-from kitten.client import KittenClient
+from kitten.paradigm import Paradigm
+from kitten.paradigm import annotate
 from kitten.server import RequestError
 from kitten.validation import Validator
 from jsonschema.exceptions import ValidationError
@@ -18,21 +19,28 @@ from jsonschema.exceptions import ValidationError
 
 class NodeValidator(Validator):
     def ping_request(self):
-        return {}  # Yay no extra fields
+        return {}
+
+    def ping_response(self):
+        return {
+            'pong': {
+                'type': 'boolean'
+            }
+        }
 
 
-class NodeParadigm(object):
+class NodeParadigm(Paradigm):
     validator = NodeValidator()
 
     def setup(self):  # pragma: nocover
         pass
 
-    def ping(self, request):
-        """
-        Handle a remote ping request
+    @annotate
+    def ping_request(self, request):
+        return {}
 
-        """
-
+    @annotate
+    def ping_response(self, request):
         return {
             'pong': True
         }
@@ -47,7 +55,6 @@ class Node(Base):
     created = Column(DateTime, default=datetime.datetime.now)
     last_seen = Column(DateTime, default=datetime.datetime.now)
 
-    client = KittenClient()
     log = logbook.Logger('Node')
 
     def __init__(self, address):
@@ -103,13 +110,14 @@ class Node(Base):
 
         """
 
-        request = {
-            'paradigm': 'node',
-            # 'address': self.address,
-        }
+        # TODO: Move away into ping()
+        request = self.paradigm.ping_request({})
         request.update(data)
 
-        response = self.client.send(self.address, request)
+        self.paradigm.validator.request(request, {'node': self.paradigm})
+        response = self.paradigm.client.send(self.address, request)
+        self.paradigm.validator.response(response, {'node': self.paradigm})
+
         return response
 
     def ping(self):

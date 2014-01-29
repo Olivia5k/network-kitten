@@ -46,6 +46,9 @@ class MockValidator(Validator):
     def method_request(self):
         return {'field': {'type': 'number'}}
 
+    def method_response(self):
+        return {'code': {'type': 'string'}}
+
 
 def builtin(target):
     """

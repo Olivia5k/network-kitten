@@ -136,16 +136,17 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
 class TestNodeMessaging(object):
     def setup_method(self, method):
         self.node = Node('thunderboltsandlightning.com')
-        self.node.client = MagicMock()
+        self.node.paradigm = MagicMock()
 
     def test_messaging(self):
         request = {
-            'powermetal': True,
+            'method': 'ping',
+            'paradigm': 'node',
         }
 
         self.node.message(request)
 
-        assert self.node.client.send.called_once_with({
+        assert self.node.paradigm.client.send.called_once_with({
             'paradigm': 'node',
             'address': self.node.address,
             'powermetal': True,
@@ -163,7 +164,8 @@ class TestNodeMessagingIntegration(MockKittenClientMixin):
     def test_ping(self, ctx, poller):
         ctx.return_value = self.context
 
-        self.socket.recv_unicode.return_value = '{"pong": true}'
+        j = '{"pong": true, "method": "ping", "paradigm": "node"}'
+        self.socket.recv_unicode.return_value = j
         poller.return_value.poll.return_value = [(self.socket, 1)]
 
         ret = self.node.ping()
@@ -199,8 +201,12 @@ class TestNodeParadigmPing(object):
         self.paradigm = NodeParadigm()
 
     def test_ping_response(self):
-        ret = self.paradigm.ping({})
-        assert ret == {'pong': True}
+        ret = self.paradigm.ping_response({})
+        assert ret == {
+            'pong': True,
+            'method': 'ping',
+            'paradigm': 'node',
+        }
 
 
 class TestNodeValidator(object):

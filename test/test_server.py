@@ -8,6 +8,8 @@ from mock import MagicMock, patch, call, mock_open
 from test.utils import MockValidator, builtin
 
 from kitten import server
+from kitten.paradigm import Paradigm
+from kitten.paradigm import annotate
 from kitten.server import KittenServer
 from kitten.server import RequestError
 from kitten.server import setup_parser
@@ -15,10 +17,17 @@ from kitten.server import execute_parser
 from kitten.validation import Validator
 
 
-class MockParadigm(object):
+class MockParadigm(Paradigm):
     validator = MockValidator()
 
-    def method(self, request):
+    @annotate
+    def method_request(self, request):
+        return {
+            'code': 'OK'
+        }
+
+    @annotate
+    def method_response(self, request):
         return {
             'code': 'OK'
         }
@@ -36,7 +45,11 @@ class TestServerIntegration(object):
         request = json.dumps({'paradigm': 'mock', 'method': 'method'})
         result = self.server.handle_request(request)
 
-        assert result == {'code': 'OK'}
+        assert result == {
+            'code': 'OK',
+            'paradigm': 'mock',
+            'method': 'method',
+        }
 
     def test_handle_request_invalid_json(self):
         request = '{'
