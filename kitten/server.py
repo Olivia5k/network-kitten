@@ -128,12 +128,9 @@ class KittenServer(object):
 
     def setup(self):
         self.log.info('Setting up server')
-        self.setup_paradigms()
+        self.paradigms = self.get_paradigms()
         self.setup_signals()
         self.setup_pidfile()
-
-    def setup_paradigms(self):
-        self.paradigms = self.get_paradigms()
 
     def setup_signals(self):
         signal.signal(signal.SIGINT, self.signal_handler)
