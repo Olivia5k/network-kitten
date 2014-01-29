@@ -35,8 +35,11 @@ class KittenClient(object):
 
     def close(self, socket):
         socket.close()
-        self.context.destroy()
-        del self.context
+
+        # TODO: Figure out why destroying the context makes the application
+        # hang indefinetely.
+        # self.context.destroy()
+        # del self.context
 
     def connect(self, address):
         self.context = zmq.Context()
