@@ -191,17 +191,29 @@ def setup_parser(subparsers):
     )
 
     sub = server.add_subparsers(help='Server commands', dest="server_command")
-    sub.add_parser('start', help='Start the server (default)')
-    sub.add_parser('stop', help='Stop the server')
+    start = sub.add_parser('start', help='Start the server (default)')
+    stop = sub.add_parser('stop', help='Stop the server')
+
+    for p in (server, start, stop):
+        p.add_argument(
+            '--port',
+            type=int,
+            default=conf.DEFAULT_PORT,
+            metavar='<port>',
+            help='Port to listen on, default {0}'.format(conf.DEFAULT_PORT),
+        )
 
     return execute_parser
 
 
 def execute_parser(ns):
+    # TODO: Test that specifying a port actually leads to it being used
+    port = ns.port if ns.port else conf.PORT
+
     if ns.server_command == "stop":
-        return stop_server()
+        return stop_server(port)
     else:
-        start_server()
+        start_server(port)
 
 
 def is_running():
@@ -209,17 +221,17 @@ def is_running():
     return os.path.isfile(conf.PIDFILE)
 
 
-def start_server():
+def start_server(port):
     logbook.info('Starting kitten server')
 
     validator = Validator()
     server = KittenServer(validator)
     server.setup()
 
-    server.listen_forever()
+    server.listen_forever(port)
 
 
-def stop_server():
+def stop_server(port):
     if not os.path.exists(conf.PIDFILE):
         logbook.error(
             'No pidfile found; kitten server is probably not running',
