@@ -10,7 +10,6 @@ from sqlalchemy import String
 from kitten import conf
 from kitten.db import Session
 from kitten.db import Base
-from kitten.util.ui import TerminalUI
 from kitten.client import KittenClient
 from kitten.server import RequestError
 from kitten.validation import Validator
@@ -24,7 +23,6 @@ class Node(Base):
     address = Column(String(255))
     created = Column(DateTime, default=datetime.datetime.now)
     last_seen = Column(DateTime, default=datetime.datetime.now)
-    ui = TerminalUI()
 
     client = KittenClient()
     log = logbook.Logger('Node')
@@ -54,15 +52,15 @@ class Node(Base):
         q = session.query(Node).filter(Node.address == address)
 
         if session.query(q.exists()).scalar():
-            con.ui.error('Node {0} already exists.'.format(address))
+            con.log.error('{0} already exists.'.format(con))
             return
 
         if con.ping():
             session.add(con)
             session.commit()
-            con.ui.success('Created')
+            con.log.info('{0} added.'.format(con))
         else:
-            con.ui.error('Could not connect to node. Node not added.')
+            con.log.error('Could not connect to {0}.'.format(con))
 
         session.close()
 
