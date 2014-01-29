@@ -104,15 +104,11 @@ class Node(Base):
         session = Session()
         return session.query(Node).all()
 
-    def message(self, data):
+    def message(self, request):
         """
         Send a message to the node
 
         """
-
-        # TODO: Move away into ping()
-        request = self.paradigm.ping_request({})
-        request.update(data)
 
         self.paradigm.validator.request(request, {'node': self.paradigm})
         response = self.paradigm.client.send(self.address, request)
@@ -129,8 +125,10 @@ class Node(Base):
         """
 
         try:
-            response = self.message({'method': 'ping'})
+            request = self.paradigm.ping_request({})
+            response = self.message(request)
             return response['pong']
+
         except (KeyError, RequestError, ValidationError):
             self.log.exception('Ping failed')
             return False
