@@ -15,6 +15,8 @@ class MockDatabaseMixin(object):
         db.Base.metadata.create_all(db.engine)
         self.session = db.Session()
 
+        maybe_super(MockDatabaseMixin, self, 'setup_method', method)
+
     def teardown_method(self, method):
         self.session.close()
         db.Base.metadata.drop_all(db.engine)
@@ -35,6 +37,8 @@ class MockKittenClientMixin(object):
         self.context = mock.MagicMock()
         self.socket = mock.MagicMock()
         self.context.socket.return_value = self.socket
+
+        maybe_super(MockKittenClientMixin, self, 'setup_method', method)
 
 
 class MockValidator(Validator):
@@ -60,3 +64,17 @@ def builtin(target):
         'builtins' if mock.inPy3k else '__builtin__',
         target,
     )
+
+
+def maybe_super(cls, self, key, *args, **kwargs):
+    """
+    Call a superclass method, but only if it actually exists.
+
+    This avoids problems when doing multiple inherintance, and is mostly used
+    with setup_method of the Mock classes above.
+
+    """
+
+    maybe = getattr(super(cls, self), key, None)
+    if maybe:
+        maybe(*args, **kwargs)
