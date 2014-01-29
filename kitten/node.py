@@ -16,8 +16,31 @@ from kitten.validation import Validator
 from jsonschema.exceptions import ValidationError
 
 
+class NodeValidator(Validator):
+    def ping_request(self):
+        return {}  # Yay no extra fields
+
+
+class NodeParadigm(object):
+    validator = NodeValidator()
+
+    def setup(self):  # pragma: nocover
+        pass
+
+    def ping(self, request):
+        """
+        Handle a remote ping request
+
+        """
+
+        return {
+            'pong': True
+        }
+
+
 class Node(Base):
     __tablename__ = 'node'
+    paradigm = NodeParadigm()
 
     id = Column(Integer(), primary_key=True)
     address = Column(String(255))
@@ -106,28 +129,6 @@ class Node(Base):
 
     def repr(self):  # pragma: nocover
         return self.__str__()
-
-
-class NodeValidator(Validator):
-    def ping_request(self):
-        return {}  # Yay no extra fields
-
-
-class NodeParadigm(object):
-    validator = NodeValidator()
-
-    def setup(self):  # pragma: nocover
-        pass
-
-    def ping(self, request):
-        """
-        Handle a remote ping request
-
-        """
-
-        return {
-            'pong': True
-        }
 
 
 def setup_parser(subparsers):
