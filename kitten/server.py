@@ -114,7 +114,7 @@ class KittenServer(object):
         self.validate_request(request)
 
         paradigm_name = request['paradigm']
-        method_name = request['method'] + '_request'
+        method_name = request['method'] + '_response'
 
         paradigm = self.paradigms[paradigm_name]
         method = getattr(paradigm, method_name, None)
