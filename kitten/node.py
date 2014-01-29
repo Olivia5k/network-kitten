@@ -140,17 +140,7 @@ class Node(Base):
         return session.query(Node).all()
 
     def message(self, request):
-        """
-        Send a message to the node
-
-        """
-
-        # TODO: Move these into the paradigm and create paradigm.send()
-        self.paradigm.validator.request(request, {'node': self.paradigm})
-        response = self.paradigm.client.send(self.address, request)
-        self.paradigm.validator.response(response, {'node': self.paradigm})
-
-        return response
+        return self.paradigm.send(self.address, request)
 
     def ping(self):
         """

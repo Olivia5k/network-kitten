@@ -5,12 +5,19 @@ from kitten.client import KittenClient
 class Paradigm(object):
     client = KittenClient()
 
-    def _get_paradigm_name(self):
-        cls = self.__class__.__name__
-        cls = cls.lower()
-        cls = cls[:-8]  # Remove paradigm
+    def send(self, address, request):
+        paradigms = {self.name: self}
 
-        return cls
+        self.validator.request(request, paradigms)
+        response = self.client.send(address, request)
+        self.validator.response(response, paradigms)
+
+        return response
+
+    @property
+    def name(self):
+        # 'FooParadigm' => 'foo'
+        return self.__class__.__name__.lower()[:-8]  # Remove paradigm
 
 
 def annotate(func):
@@ -18,7 +25,7 @@ def annotate(func):
         ret = func(self, *args)
 
         ret.update({
-            'paradigm': self._get_paradigm_name(),
+            'paradigm': self.name,
             'method': re.sub(r'_re(quest|sponse)$', '', func.__name__),
         })
 

@@ -117,10 +117,10 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
 
         assert r.call_count == 1
 
-    @patch.object(Node, 'message')
+    @patch.object(Node, 'paradigm')
     @patch.object(Node, 'ping')
     @patch.object(Node, 'repr')
-    def test_execute_add_argument(self, r, p, m):
+    def test_execute_add_argument(self, r, p, paradigm):
         address = '123.123.123.123:4567'
 
         self.ns.sub = 'add'
@@ -133,6 +133,7 @@ class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
         res = self.session.query(Node).all()
         assert len(res) == 1
         assert res[0].address == address
+        assert paradigm.send.called
 
 
 class TestNodeMessaging(object):
