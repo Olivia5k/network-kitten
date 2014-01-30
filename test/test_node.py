@@ -10,7 +10,7 @@ from kitten.node import execute_parser
 from test.utils import MockDatabaseMixin
 from test.utils import MockKittenClientMixin
 
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 from kitten.server import RequestError
 from jsonschema.exceptions import ValidationError
@@ -290,3 +290,32 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         )
 
         create.assert_called_once_with(node, False)
+
+    @patch.object(Node, 'create')
+    @patch('zmq.Poller')
+    @patch('zmq.Context')
+    def test_sync_multiple_new_nodes(self, ctx, poller, create):
+        ctx.return_value = self.context
+        nodes = ['neverland.ca.org', 'node.js', 'hehe.people.nu']
+
+        self.socket.recv_unicode.return_value = json.dumps({
+            'method': 'sync',
+            'paradigm': 'node',
+            'nodes': nodes,
+        })
+        poller.return_value.poll.return_value = [(self.socket, 1)]
+
+        self.node.sync()
+
+        self.socket.send_unicode.assert_called_once_with(
+            json.dumps({
+                'nodes': [],
+                'method': 'sync',
+                'paradigm': 'node',
+            })
+        )
+
+        calls = create.call_args_list
+        assert len(calls) == 3
+        for x, address in enumerate(nodes):
+            assert calls[x] == call(address, False)
