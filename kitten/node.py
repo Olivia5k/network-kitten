@@ -6,6 +6,7 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import String
+from sqlalchemy.sql.expression import not_
 
 from kitten import conf
 from kitten.db import Session
@@ -68,8 +69,14 @@ class NodeParadigm(Paradigm):
 
     @annotate
     def sync_response(self, request):
-        nodes = []
-        # logic
+        session = Session()
+
+        q = session.query(Node).filter(
+            not_(Node.address.in_(request['nodes']))
+        )
+        nodes = [n.address for n in q.all()]
+
+        session.close()
         return {
             'nodes': nodes
         }

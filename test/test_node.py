@@ -319,3 +319,24 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         assert len(calls) == 3
         for x, address in enumerate(nodes):
             assert calls[x] == call(address, False)
+
+    def test_sync_response(self):
+        nodes = ['neverland.ca.org', 'node.js', 'hehe.people.nu']
+        for address in nodes:
+            self.add_node(address)
+
+        ret = self.node.paradigm.sync_response({'nodes': []})
+        assert ret == {
+            'nodes': nodes,
+            'method': 'sync',
+            'paradigm': 'node',
+        }
+
+    def test_sync_response_already_has_one(self):
+        nodes = ['neverland.ca.org', 'node.js', 'hehe.people.nu']
+        for address in nodes:
+            self.add_node(address)
+
+        ret = self.node.paradigm.sync_response({'nodes': ['node.js']})
+
+        assert 'node.js' not in ret['nodes']
