@@ -69,16 +69,30 @@ class NodeParadigm(Paradigm):
 
     @annotate
     def sync_response(self, request):
+        """
+        Process a request to sync
+
+        Return all nodes present in local database but not provided in request,
+        and create new nodes for all nodes present in request but not in local
+        database.
+
+        """
+
         session = Session()
 
-        q = session.query(Node).filter(
-            not_(Node.address.in_(request['nodes']))
-        )
-        nodes = [n.address for n in q.all()]
+        nodes = set(request['nodes'])
+        own = set(n.address for n in session.query(Node).all())
+
+        to_requester = list(own - nodes)
+        to_me = list(nodes - own)
+
+        # This should be in a greenlet
+        for address in to_me:
+            Node.create(address, True)
 
         session.close()
         return {
-            'nodes': nodes
+            'nodes': sorted(to_requester),
         }
 
 

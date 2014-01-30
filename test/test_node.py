@@ -320,8 +320,10 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         for x, address in enumerate(nodes):
             assert calls[x] == call(address, False)
 
-    def test_sync_response(self):
-        nodes = ['neverland.ca.org', 'node.js', 'hehe.people.nu']
+    @patch.object(Node, 'create')
+    def test_sync_response(self, create):
+        nodes = sorted(['neverland.ca.org', 'node.js', 'hehe.people.nu'])
+
         for address in nodes:
             self.add_node(address)
 
@@ -332,11 +334,26 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
             'paradigm': 'node',
         }
 
-    def test_sync_response_already_has_one(self):
+    @patch.object(Node, 'create')
+    def test_sync_response_requester_already_has_one(self, create):
         nodes = ['neverland.ca.org', 'node.js', 'hehe.people.nu']
         for address in nodes:
             self.add_node(address)
 
         ret = self.node.paradigm.sync_response({'nodes': ['node.js']})
 
+        assert len(ret['nodes']) == 2
         assert 'node.js' not in ret['nodes']
+
+    @patch.object(Node, 'create')
+    def test_sync_response_one_not_known(self, create):
+        nodes = ['neverland.ca.org', 'hehe.people.nu']
+        for address in nodes:
+            self.add_node(address)
+
+        ret = self.node.paradigm.sync_response({'nodes': ['node.js']})
+
+        assert len(ret['nodes']) == 2
+        assert 'node.js' not in ret['nodes']
+
+        create.assert_called_once_with('node.js', True)
