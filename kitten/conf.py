@@ -26,7 +26,6 @@ DATA_DIR = get_dir('DATA_HOME', '.local/share')
 CACHE_DIR = get_dir('CACHE_HOME', '.cache')
 LOG_DIR = os.path.join(DATA_DIR, 'logs')
 PIDFILE = os.path.join(CACHE_DIR, 'server.pid')
-DB_URI = 'sqlite:///{0}/kitten.db'.format(DATA_DIR)
 
 
 def create_dirs():  # pragma: nocover

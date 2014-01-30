@@ -2,24 +2,46 @@ from kitten import db
 from kitten.client import KittenClient
 from kitten.validation import Validator
 
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
 import mock
 
 
 class MockDatabaseMixin(object):
     """
-    Setup self.session as a SQLalchemy Session and clear tables after each run
+    Setup an in-memory database, db helpers and complete clear after each run
+
+    Use this as a superclass whenever a test touches the database. See
+    test.test_node.NodeTestBase for an example on how to implement this.
 
     """
 
+    engine = create_engine('sqlite://')
+    Session = sessionmaker(bind=engine)
+    Base = declarative_base()
+
     def setup_method(self, method):
-        db.Base.metadata.create_all(db.engine)
-        self.session = db.Session()
+        self.Base.metadata.create_all(self.engine)
+        self.session = self.Session()
 
         maybe_super(MockDatabaseMixin, self, 'setup_method', method)
 
     def teardown_method(self, method):
         self.session.close()
-        db.Base.metadata.drop_all(db.engine)
+        self.Base.metadata.drop_all(self.engine)
+
+    # It might be that this class could be faster if it did not do this always.
+    def patch_classes(self, *classes):
+        engine = create_engine('sqlite://')
+
+        db.Session.configure(bind=engine)
+        self.Session.configure(bind=engine)
+
+        for cls in classes:
+            cls.metadata.bind = engine
+            cls.metadata.create_all()
 
 
 class MockKittenClientMixin(object):

@@ -195,17 +195,8 @@ def setup_parser(subparsers):
     )
 
     sub = server.add_subparsers(help='Server commands', dest="server_command")
-    start = sub.add_parser('start', help='Start the server (default)')
-    stop = sub.add_parser('stop', help='Stop the server')
-
-    for p in (server, start, stop):
-        p.add_argument(
-            '--port',
-            type=int,
-            default=conf.DEFAULT_PORT,
-            metavar='<port>',
-            help='Port to listen on, default {0}'.format(conf.DEFAULT_PORT),
-        )
+    sub.add_parser('start', help='Start the server (default)')
+    sub.add_parser('stop', help='Stop the server')
 
     return execute_parser
 

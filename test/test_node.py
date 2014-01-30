@@ -16,14 +16,18 @@ from kitten.server import RequestError
 from jsonschema.exceptions import ValidationError
 
 
-class NodeUtilMixin(object):
+class NodeTestBase(MockDatabaseMixin):
+    def setup_method(self, method):
+        self.patch_classes(Node)
+        super(NodeTestBase, self).setup_method(method)
+
     def add_node(self, address):
         node = Node(address)
         self.session.add(node)
         self.session.commit()
 
 
-class TestNodeCreation(MockDatabaseMixin, NodeUtilMixin):
+class TestNodeCreation(NodeTestBase):
     def setup_method(self, method):
         self.address = 'localhost:63161'
         super(TestNodeCreation, self).setup_method(method)
@@ -81,7 +85,7 @@ class TestNodeArgparser(object):
         assert ret is execute_parser
 
 
-class TestNodeArgparserIntegration(MockDatabaseMixin, NodeUtilMixin):
+class TestNodeArgparserIntegration(NodeTestBase):
     def setup_method(self, method):
         self.ns = MagicMock()
         super(TestNodeArgparserIntegration, self).setup_method(method)
@@ -233,7 +237,7 @@ class TestNodeValidator(object):
             self.validator.request(self.request, self.paradigms)
 
 
-class TestNodeSync(MockDatabaseMixin, MockKittenClientMixin):
+class TestNodeSync(NodeTestBase, MockKittenClientMixin):
     def setup_method(self, method):
         self.node = Node('lament.toy.factory.com:1234')
         super(TestNodeSync, self).setup_method(method)

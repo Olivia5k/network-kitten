@@ -43,12 +43,25 @@ def version():
     return ret
 
 
+def global_arguments(parser):
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=conf.DEFAULT_PORT,
+        metavar='<port>',
+        help='Port to listen on, default {0}'.format(conf.DEFAULT_PORT),
+    )
+
+    return parser
+
+
 def main():
     # First things first; setup purdy color logging:
     log.setup_color()
 
     # Base of argument parser
     parser = argparse.ArgumentParser('kitten')
+    parser = global_arguments(parser)
     subparsers = parser.add_subparsers(help="Core commands", dest="command")
 
     # Executors dict. All setup_parser functions are required add to this dict
@@ -71,7 +84,7 @@ def main():
     conf.create_dirs()
 
     # Create core db tables that the application depends upon.
-    db.setup_core()
+    db.setup_core(ns)
 
     # If the server is not already running and we're not trying to modify it,
     # start one in the background.
