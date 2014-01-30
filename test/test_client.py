@@ -20,8 +20,8 @@ class TestClientMessaging(MockKittenClientMixin):
 
         assert ret == {'hehe': True}
         assert self.socket.connect.called
-        assert self.socket.send_unicode.called_once_with('{}')
         assert self.socket.recv_unicode.called
+        self.socket.send_unicode.assert_called_once_with('{}')
 
     @mock.patch('zmq.Poller')
     @mock.patch('zmq.Context')

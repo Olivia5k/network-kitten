@@ -177,7 +177,7 @@ class TestServerSetupUnits(object):
         with patch(builtin('open'), fake):
             self.server.setup_pidfile()
 
-        assert fake.return_value.write.called_once_with(str(pid))
+        fake.return_value.write.assert_called_once_with(str(pid))
 
 
 class TestServerSignalHandling(object):
@@ -218,7 +218,7 @@ class TestServerTeardownUnits(object):
     @patch('os.remove')
     def test_teardown_pidfile(self, remove, pidfile):
         self.server.teardown_pidfile()
-        assert remove.called_once_with(pidfile)
+        remove.assert_called_once_with(pidfile)
 
 
 class TestServerSocket(object):
@@ -235,7 +235,7 @@ class TestServerSocket(object):
         socket = ctx.socket()
 
         assert ret is socket
-        assert socket.bind.called_once_with('tcp://*:{0}'.format(port))
+        socket.bind.assert_called_once_with('tcp://*:{0}'.format(port))
 
 
 class TestServerSocketListener(object):
@@ -256,7 +256,7 @@ class TestServerSocketListener(object):
 
         ret = self.server.listen(self.socket)
         assert ret, "Loop halted because of exception when it shouldn't"
-        self.socket.send_unicode.called_once_with(
+        self.socket.send_unicode.assert_called_once_with(
             json.dumps({'code': code, 'message': msg})
         )
 
@@ -267,7 +267,7 @@ class TestServerSocketListener(object):
 
         ret = self.server.listen(self.socket)
         assert ret, "Loop halted because of exception when it shouldn't"
-        self.socket.send_unicode.called_once_with(
+        self.socket.send_unicode.assert_called_once_with(
             json.dumps({'code': 'VALIDATION_ERROR', 'message': msg})
         )
 
@@ -277,7 +277,7 @@ class TestServerSocketListener(object):
 
         ret = self.server.listen(self.socket)
         assert ret, "Loop halted because of exception when it shouldn't"
-        self.socket.send_unicode.called_once_with(
+        self.socket.send_unicode.assert_called_once_with(
             json.dumps({'code': 'UNKNOWN_ERROR', 'message': msg})
         )
 
@@ -287,4 +287,4 @@ class TestServerUtils(object):
     @patch('os.path.isfile')
     def test_is_running(self, isfile, pidfile):
         server.is_running()
-        assert isfile.called_once_with(pidfile)
+        isfile.assert_called_once_with(pidfile)

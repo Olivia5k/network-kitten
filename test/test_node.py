@@ -10,7 +10,7 @@ from kitten.node import execute_parser
 from test.utils import MockDatabaseMixin
 from test.utils import MockKittenClientMixin
 
-from mock import MagicMock, patch, call
+from mock import MagicMock, patch
 
 from kitten.server import RequestError
 from jsonschema.exceptions import ValidationError
@@ -145,19 +145,14 @@ class TestNodeMessaging(object):
         self.node = Node('thunderboltsandlightning.com')
         self.node.paradigm = MagicMock()
 
-    def test_messaging(self):
-        request = {
-            'method': 'ping',
-            'paradigm': 'node',
-        }
-
+    def test_messaging_adds_address(self):
+        request = {}
         self.node.message(request)
 
-        assert self.node.paradigm.client.send.called_once_with({
-            'paradigm': 'node',
-            'address': self.node.address,
-            'powermetal': True,
-        })
+        self.node.paradigm.send.assert_called_once_with(
+            self.node.address,
+            request,
+        )
 
 
 class TestNodeMessagingIntegration(MockKittenClientMixin):
@@ -178,8 +173,12 @@ class TestNodeMessagingIntegration(MockKittenClientMixin):
         ret = self.node.ping()
 
         assert ret is True
-        assert self.socket.connect.called_once_with(self.host)
         assert self.socket.send_unicode.called
+
+        # Make sure that it adds the tcp:// part.
+        self.socket.connect.assert_called_once_with(
+            'tcp://{0}'.format(self.host),
+        )
 
     @patch.object(Node, 'message')
     def test_ping_keyerror(self, message):
@@ -257,7 +256,13 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
 
         self.node.sync()
 
-        assert self.socket.send_unicode.called_once_with('{"nodes": []}')
+        self.socket.send_unicode.assert_called_once_with(
+            json.dumps({
+                'method': 'sync',
+                'paradigm': 'node',
+                'nodes': [],
+            })
+        )
         assert not create.called
 
     @patch.object(Node, 'create')
@@ -276,12 +281,12 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
 
         self.node.sync()
 
-        assert self.socket.send_unicode.call_args_list == [call(
+        self.socket.send_unicode.assert_called_once_with(
             json.dumps({
                 'nodes': [],
                 'method': 'sync',
                 'paradigm': 'node',
             })
-        )]
+        )
 
-        assert create.call_args_list == [call(node, False)]
+        create.assert_called_once_with(node, False)
