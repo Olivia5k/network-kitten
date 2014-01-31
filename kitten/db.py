@@ -16,3 +16,14 @@ def setup_core(ns):
     from kitten import node
     node.Node.metadata.bind = engine
     node.Node.metadata.create_all()
+
+    address = '{0}:{1}'.format(conf.ADDRESS, ns.port)
+
+    session = Session()
+    q = session.query(node.Node).filter(node.Node.address == address)
+
+    if not session.query(q.exists()).scalar():
+        session.add(node.Node(address))
+        session.commit()
+
+    session.close()

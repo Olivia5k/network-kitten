@@ -5,6 +5,8 @@ from kitten import util
 PORT = 5555
 DEFAULT_PORT = 5555
 
+ADDRESS = 'localhost'
+
 
 def get_dir(xdg_key, fallback):
     """

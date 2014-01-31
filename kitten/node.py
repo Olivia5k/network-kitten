@@ -6,7 +6,6 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import String
-from sqlalchemy.sql.expression import not_
 
 from kitten import conf
 from kitten.db import Session
@@ -186,7 +185,8 @@ class Node(Base):
 
         """
 
-        nodes = [n.address for n in Node.list()]
+        # TODO: Currently not sending to self. Fix this properly.
+        nodes = [n.address for n in Node.list() if n.address != self.address]
         request = self.paradigm.sync_request({
             'nodes': nodes,
         })
@@ -194,7 +194,7 @@ class Node(Base):
         response = self.message(request)
 
         for address in response['nodes']:
-            Node.create(address, False)
+            Node.create(address, True)
 
 
 def setup_parser(subparsers):

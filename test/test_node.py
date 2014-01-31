@@ -289,7 +289,7 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
             })
         )
 
-        create.assert_called_once_with(node, False)
+        create.assert_called_once_with(node, True)
 
     @patch.object(Node, 'create')
     @patch('zmq.Poller')
@@ -318,7 +318,7 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         calls = create.call_args_list
         assert len(calls) == 3
         for x, address in enumerate(nodes):
-            assert calls[x] == call(address, False)
+            assert calls[x] == call(address, True)
 
     @patch.object(Node, 'create')
     def test_sync_response(self, create):
