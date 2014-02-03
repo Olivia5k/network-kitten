@@ -22,3 +22,12 @@ class TestDatabase(object):
         db.setup_core(self.ns)
 
         assert 'kitten-57757.db' in ce.call_args_list[0][0][0]
+
+    @patch('kitten.db.Session')
+    @patch('kitten.db.create_engine')
+    def test_setup_core_create_self(self, ce, session):
+        session.return_value.query.return_value.scalar.return_value = False
+        self.ns.port = 57757
+        db.setup_core(self.ns)
+
+        assert session.return_value.add.call_count == 1
