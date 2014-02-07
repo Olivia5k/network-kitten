@@ -53,12 +53,7 @@ class Validator(object):
                 )
             )
 
-        # Since we are going to modify the schema, we need to make a deep copy
-        # of it so that future requests are not contaminated by what we do now.
-        # TODO: Split into function and add deeper tests.
-        schema = copy.deepcopy(self.core_schema)
-        schema['properties'].update(method())
-
+        schema = self.decorate_schema(method())
         jsonschema.validate(request, schema)
 
     def get_method(self, data):
@@ -98,3 +93,12 @@ class Validator(object):
         """
 
         return ", ".join("'{0}'".format(x) for x in iterable)
+
+    def decorate_schema(self, schema):
+        # TODO: Fine grained unit tests
+        # Since we are going to modify the schema, we need to make a deep copy
+        # of it so that future requests are not contaminated by what we do now.
+        decorated = copy.deepcopy(self.core_schema)
+        decorated['properties'].update(schema)
+
+        return decorated
