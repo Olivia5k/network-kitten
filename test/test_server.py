@@ -36,7 +36,7 @@ class MockParadigm(Paradigm):
 class TestServerIntegration(object):
     def setup_method(self, method):
         self.validator = Validator()
-        self.server = KittenServer(self.validator)
+        self.server = KittenServer(self.validator, MagicMock())
         self.server.paradigms = {
             'mock': MockParadigm()
         }
@@ -99,15 +99,17 @@ class TestServerArgparserIntegration(object):
     def setup_method(self, method):
         self.server = MagicMock()
         self.ns = MagicMock()
+        self.validator = MagicMock()
 
+    @patch('kitten.validation.Validator')
     @patch.object(server, 'KittenServer')
-    def test_execute_parser_start_server(self, KS):
+    def test_execute_parser_start_server(self, ks, v):
         self.ns.server_command = 'start'
-        self.KittenServer = KS
-        self.KittenServer.return_value = self.server
+        ks.return_value = self.server
+        v.return_value = self.validator
         execute_parser(self.ns)
 
-        assert self.KittenServer.called
+        ks.assert_called_once_with(self.validator, self.ns)
         assert self.server.listen_forever.called
 
     @patch('os.path.exists')
@@ -143,7 +145,7 @@ class TestServerArgparserIntegration(object):
 
 class TestServerSetupIntegration(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.server = KittenServer(MagicMock(), MagicMock())
         self.server.setup_paradigms = MagicMock()
         self.server.setup_signals = MagicMock()
         self.server.setup_pidfile = MagicMock()
@@ -159,7 +161,7 @@ class TestServerSetupIntegration(object):
 
 class TestServerSetupUnits(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.server = KittenServer(MagicMock(), MagicMock())
 
     @patch.object(signal, 'signal')
     def test_setup_signals(self, signal):
@@ -182,7 +184,7 @@ class TestServerSetupUnits(object):
 
 class TestServerSignalHandling(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.server = KittenServer(MagicMock(), MagicMock())
         self.server.teardown = MagicMock()
 
     def test_signal_handler_calls_teardown(self):
@@ -192,7 +194,7 @@ class TestServerSignalHandling(object):
 
 class TestServerTeardownIntegration(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.server = KittenServer(MagicMock(), MagicMock())
         self.server.teardown_pidfile = MagicMock()
 
     def test_teardown_when_not_torn_down(self):
@@ -212,18 +214,18 @@ class TestServerTeardownIntegration(object):
 
 class TestServerTeardownUnits(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.server = KittenServer(MagicMock(), MagicMock())
 
-    @patch('kitten.conf.PIDFILE')
+    @patch('kitten.conf.pidfile')
     @patch('os.remove')
     def test_teardown_pidfile(self, remove, pidfile):
         self.server.teardown_pidfile()
-        remove.assert_called_once_with(pidfile)
+        remove.assert_called_once_with(pidfile.return_value)
 
 
 class TestServerSocket(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.server = KittenServer(MagicMock(), MagicMock())
 
     @patch('zmq.Context')
     def test_get_socket(self, Context):
@@ -240,7 +242,7 @@ class TestServerSocket(object):
 
 class TestServerSocketListener(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.server = KittenServer(MagicMock(), MagicMock())
         self.server.handle_request = MagicMock()
         self.socket = MagicMock()
 
@@ -283,8 +285,11 @@ class TestServerSocketListener(object):
 
 
 class TestServerUtils(object):
-    @patch('kitten.conf.PIDFILE')
+    @patch('kitten.conf.pidfile')
     @patch('os.path.isfile')
     def test_is_running(self, isfile, pidfile):
-        server.is_running()
-        isfile.assert_called_once_with(pidfile)
+        ns = MagicMock()
+        ns.port = 18237
+
+        server.is_running(ns)
+        isfile.assert_called_once_with(pidfile.return_value)

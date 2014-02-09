@@ -80,6 +80,10 @@ def main():
         parser.print_help()
         sys.exit(errno.EINVAL)
 
+    # Find out what port we will be using
+    if not ns.port:
+        ns.port = conf.PORT
+
     # Create application specific directories.
     conf.create_dirs()
 
@@ -88,7 +92,7 @@ def main():
 
     # If the server is not already running and we're not trying to modify it,
     # start one in the background.
-    if not server.is_running() and ns.command != 'server':
+    if not server.is_running(ns) and ns.command != 'server':
         logging.info('Server not running. Starting in background.')
         sub.Popen([sys.argv[0], 'server'], stdout=sub.PIPE, stderr=sub.PIPE)
 

@@ -27,9 +27,13 @@ def get_dir(xdg_key, fallback):
 DATA_DIR = get_dir('DATA_HOME', '.local/share')
 CACHE_DIR = get_dir('CACHE_HOME', '.cache')
 LOG_DIR = os.path.join(DATA_DIR, 'logs')
-PIDFILE = os.path.join(CACHE_DIR, 'server.pid')
+PIDFILE = os.path.join(CACHE_DIR, 'server-{0}.pid')
 
 
 def create_dirs():  # pragma: nocover
     for path in (DATA_DIR, CACHE_DIR, LOG_DIR):
         util.mkdir(path)
+
+
+def pidfile(port):
+    return PIDFILE.format(port)

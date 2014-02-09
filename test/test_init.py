@@ -56,6 +56,7 @@ class TestMain(object):
         ap.return_value = self.parser
         av.return_value = argv
         self.ns.command = command
+        self.ns.port = None
 
         server.setup_parser.return_value = self.runner
         self.runner.return_value = exit

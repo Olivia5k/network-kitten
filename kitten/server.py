@@ -6,7 +6,7 @@ import jsonschema
 import logbook
 
 from kitten import conf
-from kitten.validation import Validator
+import kitten.validation
 import kitten.node
 
 
@@ -23,9 +23,10 @@ class KittenServer(object):
     log = logbook.Logger('KittenServer')
     torn = False
 
-    def __init__(self, validator):
+    def __init__(self, validator, ns):
         self.paradigms = {}
         self.validator = validator
+        self.ns = ns
 
     def listen_forever(self, port=conf.PORT):  # pragma: nocover
         """
@@ -143,7 +144,7 @@ class KittenServer(object):
     def setup_pidfile(self):
         pid = str(os.getpid())
         self.log.debug('Pid: {0}', pid)
-        with open(conf.PIDFILE, 'w') as pidfile:
+        with open(self.pidfile(), 'w') as pidfile:
             pidfile.write(pid)
 
     def signal_handler(self, signum, frame):
@@ -161,7 +162,10 @@ class KittenServer(object):
 
     def teardown_pidfile(self):
         self.log.debug('Removing pidfile')
-        os.remove(conf.PIDFILE)
+        os.remove(self.pidfile())
+
+    def pidfile(self):
+        return conf.pidfile(self.ns.port)
 
     def get_socket(self, port):
         context = zmq.Context()
@@ -202,40 +206,37 @@ def setup_parser(subparsers):
 
 
 def execute_parser(ns):
-    # TODO: Test that specifying a port actually leads to it being used
-    port = ns.port if ns.port else conf.PORT
-
     if ns.server_command == "stop":
-        return stop_server(port)
+        return stop_server(ns)
     else:
-        start_server(port)
+        start_server(ns)
 
 
-def is_running():
+def is_running(ns):
     # Use existence of the pidfile to determine if the server is running
-    return os.path.isfile(conf.PIDFILE)
+    return os.path.isfile(conf.pidfile(ns.port))
 
 
-def start_server(port):
-    logbook.info('Starting kitten server')
+def start_server(ns):
+    logbook.info('Starting kitten server on port {0}'.format(ns.port))
 
-    validator = Validator()
-    server = KittenServer(validator)
+    validator = kitten.validation.Validator()
+    server = KittenServer(validator, ns)
     server.setup()
 
-    server.listen_forever(port)
+    server.listen_forever(ns.port)
 
 
-def stop_server(port):
-    if not os.path.exists(conf.PIDFILE):
-        logbook.error(
-            'No pidfile found; kitten server is probably not running',
-        )
+def stop_server(ns):
+    pidfile = conf.pidfile(ns.port)
+    if not os.path.exists(pidfile):
+        logbook.error('Pidfile {0} not found'.format(pidfile))
+        logbook.error('kitten server not running on port {0}'.format(ns.port))
         return 1
 
-    logbook.info('Stopping kitten server')
+    logbook.info('Stopping kitten server on port {0}'.format(ns.port))
     # Send sigint to PIDFILE and let the server gracefully tear down.
-    with open(conf.PIDFILE) as f:
+    with open(pidfile) as f:
         pid = int(f.read())
         os.kill(pid, signal.SIGINT)
 
