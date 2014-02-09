@@ -23,10 +23,10 @@ class KittenServer(object):
     log = logbook.Logger('KittenServer')
     torn = False
 
-    def __init__(self, validator, ns):
+    def __init__(self, ns, validator):
         self.paradigms = {}
-        self.validator = validator
         self.ns = ns
+        self.validator = validator
 
     def listen_forever(self, port=conf.PORT):  # pragma: nocover
         """
@@ -221,7 +221,7 @@ def start_server(ns):
     logbook.info('Starting kitten server on port {0}'.format(ns.port))
 
     validator = kitten.validation.Validator()
-    server = KittenServer(validator, ns)
+    server = KittenServer(ns, validator)
     server.setup()
 
     server.listen_forever(ns.port)

@@ -36,7 +36,7 @@ class MockParadigm(Paradigm):
 class TestServerIntegration(object):
     def setup_method(self, method):
         self.validator = Validator()
-        self.server = KittenServer(self.validator, MagicMock())
+        self.server = KittenServer(MagicMock(), self.validator)
         self.server.paradigms = {
             'mock': MockParadigm()
         }
@@ -109,7 +109,7 @@ class TestServerArgparserIntegration(object):
         v.return_value = self.validator
         execute_parser(self.ns)
 
-        ks.assert_called_once_with(self.validator, self.ns)
+        ks.assert_called_once_with(self.ns, self.validator)
         assert self.server.listen_forever.called
 
     @patch('os.path.exists')
