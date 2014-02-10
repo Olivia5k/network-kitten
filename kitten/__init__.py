@@ -36,7 +36,7 @@ def version():
     proc = sub.Popen(cmd.split(), stdout=sub.PIPE, stderr=sub.PIPE)
     ret = proc.communicate()[0]
 
-    if sys.version_info > (3,):
+    if sys.version_info > (3,):  # pragma: nocover
         ret = ret.decode()
 
     ret = ret.strip()

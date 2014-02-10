@@ -13,6 +13,7 @@ install_require = [
     'SQLAlchemy',
     'jsonschema',
     'pyzmq',
+    'gevent',
 ]
 
 tests_require = [
@@ -56,7 +57,6 @@ setup(
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
         'Operating System :: Unix',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 2.6',
         'Topic :: Software Development :: Build Tools',
