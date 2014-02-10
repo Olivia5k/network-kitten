@@ -1,6 +1,6 @@
 import json
 import logbook
-import zmq
+import zmq.green as zmq
 
 from kitten.server import RequestError
 

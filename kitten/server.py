@@ -1,7 +1,8 @@
 import os
 import json
 import signal
-import zmq
+import zmq.green as zmq
+import zmq as zmq_orig  # For exceptions
 import jsonschema
 import logbook
 
@@ -56,7 +57,7 @@ class KittenServer(object):
         try:
             # Listen on the socket; the actual wait is here
             request_str = socket.recv_unicode()
-        except zmq.error.ZMQError as e:
+        except zmq_orig.error.ZMQError as e:
             # This is for graceful exit of the socket
             self.log.info('Socket interrupted')
             return False

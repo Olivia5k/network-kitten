@@ -49,8 +49,8 @@ class MockKittenClientMixin(object):
     Used whenever you need to patch the inner parts of the KittenClient but not
     the entire class or call.
 
-    Methods that use this need to @mock.patch('zmq.Context') and assign the
-    return_value of that mock to be self.context.
+    Methods that use this need to @mock.patch('zmq.green.Context') and assign
+    the return_value of that mock to be self.context.
 
     """
 

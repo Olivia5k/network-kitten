@@ -9,8 +9,8 @@ class TestClientMessaging(MockKittenClientMixin):
     def setup_method(self, method):
         super(TestClientMessaging, self).setup_method(method)
 
-    @mock.patch('zmq.Poller')
-    @mock.patch('zmq.Context')
+    @mock.patch('zmq.green.Poller')
+    @mock.patch('zmq.green.Context')
     def test_simple_send(self, ctx, poller):
         ctx.return_value = self.context
 
@@ -23,8 +23,8 @@ class TestClientMessaging(MockKittenClientMixin):
         assert self.socket.recv_unicode.called
         self.socket.send_unicode.assert_called_once_with('{}')
 
-    @mock.patch('zmq.Poller')
-    @mock.patch('zmq.Context')
+    @mock.patch('zmq.green.Poller')
+    @mock.patch('zmq.green.Context')
     def test_simple_send_times_out(self, ctx, poller):
         ctx.return_value = self.context
 

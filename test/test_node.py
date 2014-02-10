@@ -161,8 +161,8 @@ class TestNodeMessagingIntegration(MockKittenClientMixin):
         self.node = Node(self.host)
         super(TestNodeMessagingIntegration, self).setup_method(method)
 
-    @patch('zmq.Poller')
-    @patch('zmq.Context')
+    @patch('zmq.green.Poller')
+    @patch('zmq.green.Context')
     def test_ping(self, ctx, poller):
         ctx.return_value = self.context
 
@@ -242,8 +242,8 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         super(TestNodeSync, self).setup_method(method)
 
     @patch.object(Node, 'create')
-    @patch('zmq.Poller')
-    @patch('zmq.Context')
+    @patch('zmq.green.Poller')
+    @patch('zmq.green.Context')
     def test_sync_no_new_nodes(self, ctx, poller, create):
         ctx.return_value = self.context
 
@@ -266,8 +266,8 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         assert not create.called
 
     @patch.object(Node, 'create')
-    @patch('zmq.Poller')
-    @patch('zmq.Context')
+    @patch('zmq.green.Poller')
+    @patch('zmq.green.Context')
     def test_sync_new_nodes(self, ctx, poller, create):
         ctx.return_value = self.context
         node = 'node.js'
@@ -292,8 +292,8 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         create.assert_called_once_with(node, True)
 
     @patch.object(Node, 'create')
-    @patch('zmq.Poller')
-    @patch('zmq.Context')
+    @patch('zmq.green.Poller')
+    @patch('zmq.green.Context')
     def test_sync_multiple_new_nodes(self, ctx, poller, create):
         ctx.return_value = self.context
         nodes = ['neverland.ca.org', 'node.js', 'hehe.people.nu']

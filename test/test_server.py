@@ -227,7 +227,7 @@ class TestServerSocket(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock(), MagicMock())
 
-    @patch('zmq.Context')
+    @patch('zmq.green.Context')
     def test_get_socket(self, Context):
         port = 3307
         ctx = MagicMock()
