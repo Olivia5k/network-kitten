@@ -1,0 +1,20 @@
+#!/bin/zsh
+
+# Helper to continuously query the local kitten databases.
+
+cd $XDG_DATA_HOME/kitten/
+
+query=${1:-"select count(address) from node;"}
+sleep=${2:-0.2}
+
+while true; do
+  clear
+  print -P "%BWatching: %F{green}${query}%f at ${sleep}s intervals%b"
+
+  for db in *.db ; do
+    print -P "%B%F{blue}${db}%f%b"
+    sqlite3 $db $query
+  done
+
+  sleep $sleep
+done
