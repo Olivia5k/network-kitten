@@ -1,0 +1,30 @@
+#!/bin/zsh
+
+# Simple functions for spawning and working with multiple local kitten servers
+
+if [[ -z "$1" ]]; then
+  echo "Error: Arguments needed. Please see the source of the script."
+  exit 1
+fi
+
+if [[ -z "$VIRTUAL_ENV" ]] || [[ ! -x "bin/kitten" ]]; then
+  echo "Error: Seemingly not in kitten virtualenv."
+  exit 2
+fi
+
+function spawn_cluster() {
+  PORT=${2:-5670}
+  DEAD='echo "\nKitten died. Press enter to kill pane."; read'
+
+  for x in {1..$1} ; do
+    cmd="bin/kitten --port $((PORT + x)) server start; $DEAD"
+    tmux neww -dc $VIRTUAL_ENV $cmd
+  done
+}
+
+function kill_cluster() {
+  killall -9 kitten
+}
+
+arg=$1 ; shift
+${arg}_cluster $*
