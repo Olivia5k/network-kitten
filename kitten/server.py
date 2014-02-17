@@ -6,6 +6,9 @@ import zmq as zmq_orig  # For exceptions
 import jsonschema
 import logbook
 
+import gevent
+import gevent.pool
+
 from kitten import conf
 import kitten.validation
 import kitten.node
@@ -28,6 +31,7 @@ class KittenServer(object):
         self.paradigms = {}
         self.ns = ns
         self.validator = validator
+        self.pool = gevent.pool.Pool(5)
 
     def listen_forever(self, port=conf.PORT):  # pragma: nocover
         """
@@ -41,9 +45,14 @@ class KittenServer(object):
         try:
             socket = self.get_socket(port)
 
-            # As long as listen returns positive, listen forever.
-            while self.listen(socket):
-                pass
+            while not self.torn:
+                self.listen(socket)
+
+            # Let the last requests finish.
+            self.log.warning('Torn. Will wait for last requests.')
+            gevent.wait()
+            self.log.warning('Done.')
+            return
 
         except Exception:
             # TODO: Move into the loop
@@ -56,12 +65,17 @@ class KittenServer(object):
     def listen(self, socket):
         try:
             # Listen on the socket; the actual wait is here
+            self.log.debug('recv_unicode...')
             request_str = socket.recv_unicode()
-        except zmq_orig.error.ZMQError as e:
+        except zmq_orig.error.ZMQError:
             # This is for graceful exit of the socket
             self.log.info('Socket interrupted')
+            raise
             return False
 
+        self.pool.spawn(self.recieve, socket, request_str)
+
+    def recieve(self, socket, request_str):
         try:
             # Send the request for processing and handle any errors
             response = self.handle_request(request_str)
@@ -87,9 +101,6 @@ class KittenServer(object):
         # Dump as JSON string and send it back
         response_str = json.dumps(response)
         socket.send_unicode(response_str)
-
-        # Return True to keep the listen_forever loop going
-        return True
 
     def handle_request(self, request_str):
         """
