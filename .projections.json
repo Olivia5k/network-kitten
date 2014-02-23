@@ -1,0 +1,10 @@
+{
+    "kitten/*.py": {
+        "alternate": "test/test_%s.py",
+        "command": "source"
+    },
+    "test/test_*.py": {
+        "alternate": "kitten/%s.py",
+        "command": "test"
+    },
+}
