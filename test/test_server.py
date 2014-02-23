@@ -46,20 +46,8 @@ class TestServerIntegration(object):
         result = self.server.handle_request(request)
 
         assert result == {
-            'code': 'OK',
-            'paradigm': 'mock',
-            'method': 'method',
+            'ack': True,
         }
-
-    def test_handle_request_invalid_json(self):
-        request = '{'
-        with pytest.raises(RequestError):
-            self.server.handle_request(request)
-
-    def test_handle_request_invalid_validation(self):
-        request = json.dumps({'hehe': 'fail'})
-        with pytest.raises(jsonschema.exceptions.ValidationError):
-            self.server.handle_request(request)
 
 
 class TestServerArgparser(object):
@@ -230,58 +218,15 @@ class TestServerSocket(object):
     @patch('zmq.green.Context')
     def test_get_socket(self, Context):
         port = 3307
+        self.server.ns.port = port
         ctx = MagicMock()
         Context.return_value = ctx
 
-        ret = self.server.get_socket(port)
+        ret = self.server.get_socket()
         socket = ctx.socket()
 
         assert ret is socket
         socket.bind.assert_called_once_with('tcp://*:{0}'.format(port))
-
-
-class TestServerSocketListener(object):
-    def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
-        self.server.handle_request = MagicMock()
-        self.socket = MagicMock()
-
-    def test_socket_interruption(self):
-        self.socket.recv_unicode.side_effect = zmq.error.ZMQError
-
-        ret = self.server.listen(self.socket)
-        assert not ret, "Loop continued when it shouldn't"
-
-    def test_request_exception(self):
-        code, msg = 'TEST_ERROR', '#yolo'
-        self.server.handle_request.side_effect = RequestError(code, msg)
-
-        ret = self.server.listen(self.socket)
-        assert ret, "Loop halted because of exception when it shouldn't"
-        self.socket.send_unicode.assert_called_once_with(
-            json.dumps({'code': code, 'message': msg})
-        )
-
-    def test_validation_exception(self):
-        msg = 'lel ur valiation suck'
-        exc = jsonschema.exceptions.ValidationError(msg)
-        self.server.handle_request.side_effect = exc
-
-        ret = self.server.listen(self.socket)
-        assert ret, "Loop halted because of exception when it shouldn't"
-        self.socket.send_unicode.assert_called_once_with(
-            json.dumps({'code': 'VALIDATION_ERROR', 'message': msg})
-        )
-
-    def test_general_exception(self):
-        msg = 'random hax0r error :('
-        self.server.handle_request.side_effect = Exception(msg)
-
-        ret = self.server.listen(self.socket)
-        assert ret, "Loop halted because of exception when it shouldn't"
-        self.socket.send_unicode.assert_called_once_with(
-            json.dumps({'code': 'UNKNOWN_ERROR', 'message': msg})
-        )
 
 
 class TestServerUtils(object):

@@ -36,11 +36,8 @@ class KittenServer(object):
             while not self.torn:
                 self.listen(socket)
 
-        except Exception:
-            self.log.exception('Server died.')
-
         finally:
-            # This usually means that the server died.
+            self.log.exception('Server died.')
             self.teardown()
 
     def listen(self, socket):
