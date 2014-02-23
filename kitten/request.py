@@ -80,7 +80,7 @@ class KittenRequest(AutoParadigmMixin):
         method_name = request['method'] + '_response'
 
         paradigm = self.paradigms[paradigm_name]
-        method = getattr(paradigm, method_name, None)
+        method = getattr(paradigm, method_name)
 
         response = method(request)
 
@@ -92,10 +92,10 @@ class KittenRequest(AutoParadigmMixin):
     def ack(self):
         return {'ack': True}
 
-    def validate_request(self, request):
+    def validate_request(self, request):  # pragma: nocover
         self.log.info('Validating request...')
         self.validator.request(request, self.paradigms)
 
-    def validate_response(self, response):
+    def validate_response(self, response):  # pragma: nocover
         self.log.info('Validating response...')
         self.validator.response(response, self.paradigms)

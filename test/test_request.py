@@ -72,3 +72,28 @@ class TestRequestProcess(RequestMixin):
         handle.side_effect = Exception(msg)
         self.request.process(self.socket)
         self.check_code('UNKNOWN_ERROR', msg)
+
+
+class TestRequestHandle(RequestMixin):
+    @patch('json.loads')
+    @patch.object(KittenRequest, 'paradigms')
+    @patch.object(KittenRequest, 'validate_response')
+    @patch.object(KittenRequest, 'validate_request')
+    def test_handle(self, req, res, para, loads):
+        p, m = 'banana', 'scale'
+        data = {'paradigm': p, 'method': m}
+        response = {'haha': 'fak u'}
+        paradigm = MagicMock()
+        paradigm.scale_response.return_value = response
+
+        request = KittenRequest('{}')
+        request.paradigms = {p: paradigm}
+
+        loads.return_value = data
+
+        ret = request.handle()
+
+        req.assert_called_once_with(data)
+        paradigm.scale_response.assert_called_once_with(data)
+        res.assert_called_once_with(response)
+        assert ret == response
