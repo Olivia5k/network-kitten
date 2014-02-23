@@ -2,7 +2,7 @@ import pytest
 import mock
 from test.utils import MockKittenClientMixin
 
-from kitten.server import RequestError
+from kitten.request import RequestError
 
 
 class TestClientMessaging(MockKittenClientMixin):

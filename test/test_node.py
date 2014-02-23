@@ -12,7 +12,7 @@ from test.utils import MockKittenClientMixin
 
 from mock import MagicMock, patch, call
 
-from kitten.server import RequestError
+from kitten.request import RequestError
 from jsonschema.exceptions import ValidationError
 
 

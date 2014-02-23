@@ -11,9 +11,9 @@ from kitten import server
 from kitten.paradigm import Paradigm
 from kitten.paradigm import annotate
 from kitten.server import KittenServer
-from kitten.server import RequestError
 from kitten.server import setup_parser
 from kitten.server import execute_parser
+from kitten.request import RequestError
 from kitten.validation import Validator
 
 

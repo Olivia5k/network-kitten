@@ -2,7 +2,7 @@ import json
 import logbook
 import zmq.green as zmq
 
-from kitten.server import RequestError
+from kitten.request import RequestError
 
 
 class KittenClient(object):

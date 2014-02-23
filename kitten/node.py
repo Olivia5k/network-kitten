@@ -12,7 +12,7 @@ from kitten.db import Session
 from kitten.db import Base
 from kitten.paradigm import Paradigm
 from kitten.paradigm import annotate
-from kitten.server import RequestError
+from kitten.request import RequestError
 from kitten.validation import Validator
 from jsonschema.exceptions import ValidationError
 
