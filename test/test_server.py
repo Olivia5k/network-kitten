@@ -207,6 +207,23 @@ class TestServerSocket(object):
         socket.bind.assert_called_once_with('tcp://*:{0}'.format(port))
 
 
+class TestServerListen(object):
+    def setup_method(self, method):
+        self.server = KittenServer(MagicMock(), MagicMock())
+        self.socket = MagicMock()
+
+    def test_listen(self):
+        recv = 'lel'
+        fake = {}
+        self.socket.recv_unicode = MagicMock(return_value=recv)
+        self.server.handle_request = MagicMock(return_value=fake)
+
+        self.server.listen(self.socket)
+        self.socket.recv_unicode.assert_called_once_with()
+        self.server.handle_request.assert_called_once_with(recv)
+        self.socket.send_unicode.assert_called_once_with('{}')
+
+
 class TestServerUtils(object):
     @patch('kitten.conf.pidfile')
     @patch('os.path.isfile')
