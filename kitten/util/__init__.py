@@ -1,5 +1,6 @@
 import os
 import errno
+import logbook
 
 
 def mkdir(path):  # pragma: nocover
@@ -25,10 +26,10 @@ class AutoParadigmMixin(object):
 
     """
 
+    log = logbook.Logger('AutoParadigmMixin')
     _paradigms = {}
 
-    @property
-    def paradigms(self):
+    def get_paradigms(self):
         if self._paradigms:
             return self._paradigms
 
@@ -38,3 +39,10 @@ class AutoParadigmMixin(object):
             'node': NodeParadigm()
         }
         return self._paradigms
+
+    def set_paradigms(self, paradigms):
+        self.log.debug('Overriding paradigms with {0}'.format(paradigms))
+        self._paradigms = paradigms
+        return self._paradigms
+
+    paradigms = property(get_paradigms, set_paradigms)

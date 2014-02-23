@@ -12,14 +12,14 @@ from kitten import conf
 import kitten.validation
 import kitten.node
 from kitten.request import KittenRequest
+from kitten.util import AutoParadigmMixin
 
 
-class KittenServer(object):
+class KittenServer(AutoParadigmMixin):
     log = logbook.Logger('KittenServer')
     torn = False
 
     def __init__(self, ns, validator):
-        self.paradigms = {}
         self.ns = ns
         self.validator = validator
         self.pool = gevent.pool.Pool(5)
@@ -99,12 +99,6 @@ class KittenServer(object):
         self.log.info('Listening on {0}', host)
 
         return socket
-
-    def get_paradigms(self):  # pragma: nocover
-        self.log.info('Loading paradigms')
-        return {
-            'node': kitten.node.NodeParadigm(),
-        }
 
 
 def setup_parser(subparsers):
