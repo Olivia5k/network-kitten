@@ -24,7 +24,7 @@ class KittenRequest(AutoParadigmMixin):
 
     def process(self, socket):
         try:
-            response = self.handle_request()
+            response = self.handle()
         except RequestError as e:
             self.log.exception('Request exception')
             response = {
