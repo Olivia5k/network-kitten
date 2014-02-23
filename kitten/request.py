@@ -2,8 +2,8 @@ import json
 import jsonschema
 import logbook
 
-
 import kitten.validation
+from kitten.util import AutoParadigmMixin
 
 
 class RequestError(Exception):
@@ -15,7 +15,7 @@ class RequestError(Exception):
         return "{0}: {1}".format(self.code, self.message)
 
 
-class KittenRequest(object):
+class KittenRequest(AutoParadigmMixin):
     log = logbook.Logger('KittenRequest')
     validator = kitten.validation.Validator()
 
