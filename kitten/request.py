@@ -22,6 +22,9 @@ class KittenRequest(AutoParadigmMixin):
     def __init__(self, request_str):
         self.request_str = request_str
 
+    def __eq__(self, other):
+        return self.request_str == other.request_str
+
     def process(self, socket):
         try:
             response = self.handle()
