@@ -129,8 +129,10 @@ class TestServerSetupUnits(object):
     def test_setup_signals(self, signal):
         self.server.setup_signals()
 
-        assert signal.call_args_list[0] == call(2, self.server.signal_handler)
-        assert signal.call_args_list[1] == call(15, self.server.signal_handler)
+        assert signal.call_args_list == [
+            call(2, self.server.signal_handler),
+            call(15, self.server.signal_handler),
+        ]
 
     @patch('os.getpid')
     def test_setup_pidfile(self, getpid):
