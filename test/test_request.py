@@ -13,7 +13,7 @@ from kitten.validation import Validator
 class RequestMixin(object):
     def setup_method(self, method):
         self.validator = Validator()
-        self.server = KittenServer(MagicMock(), self.validator)
+        self.server = KittenServer(MagicMock())
 
 
 class TestRequestValidation(RequestMixin):

@@ -9,13 +9,11 @@ from kitten.server import KittenServer
 from kitten.server import setup_parser
 from kitten.server import execute_parser
 from kitten.request import KittenRequest
-from kitten.validation import Validator
 
 
 class TestServerIntegration(object):
     def setup_method(self, method):
-        self.validator = Validator()
-        self.server = KittenServer(MagicMock(), self.validator)
+        self.server = KittenServer(MagicMock())
 
     def test_handle_request(self):
         request = json.dumps({'paradigm': 'mock', 'method': 'method'})
@@ -63,17 +61,14 @@ class TestServerArgparserIntegration(object):
     def setup_method(self, method):
         self.server = MagicMock()
         self.ns = MagicMock()
-        self.validator = MagicMock()
 
-    @patch('kitten.validation.Validator')
     @patch.object(server, 'KittenServer')
-    def test_execute_parser_start_server(self, ks, v):
+    def test_execute_parser_start_server(self, ks):
         self.ns.server_command = 'start'
         ks.return_value = self.server
-        v.return_value = self.validator
         execute_parser(self.ns)
 
-        ks.assert_called_once_with(self.ns, self.validator)
+        ks.assert_called_once_with(self.ns)
         assert self.server.listen_forever.called
 
     @patch('os.path.exists')
@@ -109,7 +104,7 @@ class TestServerArgparserIntegration(object):
 
 class TestServerSetupIntegration(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
+        self.server = KittenServer(MagicMock())
         self.server.setup_signals = MagicMock()
         self.server.setup_pidfile = MagicMock()
 
@@ -124,7 +119,7 @@ class TestServerSetupIntegration(object):
 
 class TestServerSetupUnits(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
+        self.server = KittenServer(MagicMock())
 
     @patch.object(signal, 'signal')
     def test_setup_signals(self, signal):
@@ -149,7 +144,7 @@ class TestServerSetupUnits(object):
 
 class TestServerSignalHandling(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
+        self.server = KittenServer(MagicMock())
         self.server.teardown = MagicMock()
 
     def test_signal_handler_calls_teardown(self):
@@ -159,7 +154,7 @@ class TestServerSignalHandling(object):
 
 class TestServerTeardownIntegration(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
+        self.server = KittenServer(MagicMock())
         self.server.teardown_pidfile = MagicMock()
 
     def test_teardown_when_not_torn_down(self):
@@ -179,7 +174,7 @@ class TestServerTeardownIntegration(object):
 
 class TestServerTeardownUnits(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
+        self.server = KittenServer(MagicMock())
 
     @patch('kitten.conf.pidfile')
     @patch('os.remove')
@@ -190,7 +185,7 @@ class TestServerTeardownUnits(object):
 
 class TestServerSocket(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
+        self.server = KittenServer(MagicMock())
 
     @patch('zmq.green.Context')
     def test_get_socket(self, Context):
@@ -208,7 +203,7 @@ class TestServerSocket(object):
 
 class TestServerListen(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
+        self.server = KittenServer(MagicMock())
         self.socket = MagicMock()
 
     def test_listen(self):
@@ -236,7 +231,19 @@ class TestServerUtils(object):
 
 class TestServerQueue(object):
     def setup_method(self, method):
-        self.server = KittenServer(MagicMock(), MagicMock())
+        self.server = KittenServer(MagicMock())
+
+    def test_handle_puts_requests_in_queue(self):
+        data = '{}'
+        ret = self.server.handle_request(data)
+        assert self.server.queue.qsize() == 1
+        assert self.server.queue.get() == KittenRequest(data)
+        assert ret == {'ack': True}
+
+
+class TestServerWorkerIntegration(object):
+    def setup_method(self, method):
+        self.server = KittenServer(MagicMock())
 
     def test_handle_puts_requests_in_queue(self):
         data = '{}'

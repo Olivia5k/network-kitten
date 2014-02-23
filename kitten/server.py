@@ -9,8 +9,6 @@ import gevent.pool
 from gevent.queue import Queue
 
 from kitten import conf
-import kitten.validation
-import kitten.node
 from kitten.request import KittenRequest
 
 
@@ -18,9 +16,8 @@ class KittenServer(object):
     log = logbook.Logger('KittenServer')
     torn = False
 
-    def __init__(self, ns, validator):
+    def __init__(self, ns):
         self.ns = ns
-        self.validator = validator
         self.pool = gevent.pool.Pool(5)
         self.queue = Queue()
 
@@ -124,8 +121,7 @@ def is_running(ns):
 def start_server(ns):
     logbook.info('Starting kitten server on port {0}'.format(ns.port))
 
-    validator = kitten.validation.Validator()
-    server = KittenServer(ns, validator)
+    server = KittenServer(ns)
     server.setup()
 
     gevent.spawn(server.listen_forever)
