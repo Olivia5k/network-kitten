@@ -2,7 +2,6 @@ import os
 import json
 import signal
 import zmq.green as zmq
-import jsonschema
 import logbook
 
 import gevent
@@ -12,15 +11,7 @@ from gevent.queue import Queue
 from kitten import conf
 import kitten.validation
 import kitten.node
-
-
-class RequestError(Exception):
-    def __init__(self, code, message):
-        self.code = code
-        self.message = message
-
-    def __str__(self):  # pragma: nocover
-        return "{0}: {1}".format(self.code, self.message)
+from kitten.request import KittenRequest
 
 
 class KittenServer(object):
@@ -38,9 +29,6 @@ class KittenServer(object):
         """
         Listen on the socket forever
 
-        This is pragma: nocover since it is by definition an infinite loop. All
-        the related units have their own tests.
-
         """
 
         try:
@@ -49,7 +37,6 @@ class KittenServer(object):
                 self.listen(socket)
 
         except Exception:
-            # TODO: Move into the loop
             self.log.exception('Server died.')
 
         finally:
@@ -57,73 +44,18 @@ class KittenServer(object):
             self.teardown()
 
     def listen(self, socket):
-        try:
-            request_str = socket.recv_unicode()
-            # Send the request for processing and handle any errors
-            response = self.handle_request(request_str)
-        except RequestError as e:
-            self.log.exception('Request exception')
-            response = {
-                'code': e.code,
-                'message': e.message,
-            }
-        except jsonschema.exceptions.ValidationError as e:
-            self.log.exception('Validation error')
-            response = {
-                'code': 'VALIDATION_ERROR',
-                'message': e.message,
-            }
-        except Exception as e:
-            self.log.exception('General exception')
-            response = {
-                'code': 'UNKNOWN_ERROR',
-                'message': str(e),
-            }
+        request_str = socket.recv_unicode()
+        # Send the request for processing and handle any errors
+        response = self.handle_request(request_str)
 
         # Dump as JSON string and send it back
         response_str = json.dumps(response)
         socket.send_unicode(response_str)
 
     def handle_request(self, request_str):
-        """
-        Handle a request.
-
-        This is the meat of the server. This function will take an incoming
-        request, decode it, validate it, send it to the appropriate paradigm
-        and handler, get the response, validate the response, encode the
-        response and return it back to the server.
-
-        Takes a JSON string as input and returns a dictionary.
-
-        """
-
-        self.log.info('Getting new request...')
-
-        try:
-            request = json.loads(request_str)
-        except ValueError:
-            self.log.error('Invalid JSON request: {0}', request_str)
-            raise RequestError(
-                'INVALID_REQUEST',
-                'Unable to decode JSON request.'
-            )
-
-        self.log.debug('Got request: {0}', request)
-
-        self.validate_request(request)
-
-        paradigm_name = request['paradigm']
-        method_name = request['method'] + '_response'
-
-        paradigm = self.paradigms[paradigm_name]
-        method = getattr(paradigm, method_name, None)
-
-        response = method(request)
-
-        self.validate_response(response)
-
-        self.log.debug('Returning response: {0}', response)
-        return response
+        request = KittenRequest(request_str)
+        self.queue.put(request)
+        return request.ack()
 
     def setup(self):
         self.log.info('Setting up server')
@@ -176,14 +108,6 @@ class KittenServer(object):
         return {
             'node': kitten.node.NodeParadigm(),
         }
-
-    def validate_request(self, request):
-        self.log.info('Validating request...')
-        self.validator.request(request, self.paradigms)
-
-    def validate_response(self, response):
-        self.log.info('Validating response...')
-        self.validator.response(response, self.paradigms)
 
 
 def setup_parser(subparsers):
