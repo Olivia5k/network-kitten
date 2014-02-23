@@ -8,7 +8,7 @@ except ImportError:
     kitten = None
 
 
-install_require = [
+install_requires = [
     'Logbook',
     'SQLAlchemy',
     'jsonschema',
@@ -41,10 +41,10 @@ setup(
     url='https://github.com/thiderman/kitten',
     author='Lowe Thiderman',
     author_email='lowe.thiderman@gmail.com',
-    description=('A decentralized minimalist build system'),
+    description=('A lightweight distributed clustering scheduler'),
     license='MIT',
     packages=['kitten'],
-    install_requires=install_require,
+    install_requires=install_requires,
     tests_require=tests_require,
     zip_safe=False,
     entry_points={
@@ -54,12 +54,11 @@ setup(
     },
     cmdclass={'test': PyTest},
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Operating System :: Unix',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 2.6',
-        'Topic :: Software Development :: Build Tools',
         'Topic :: System :: Clustering',
         'Topic :: System :: Networking',
     ],
