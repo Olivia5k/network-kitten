@@ -24,21 +24,6 @@ class KittenServer(object):
         self.pool = gevent.pool.Pool(5)
         self.queue = Queue()
 
-    def listen_forever(self):  # pragma: nocover
-        """
-        Listen on the socket forever
-
-        """
-
-        try:
-            socket = self.get_socket()
-            while not self.torn:
-                self.listen(socket)
-
-        finally:
-            self.log.exception('Server died.')
-            self.teardown()
-
     def listen(self, socket):
         request_str = socket.recv_unicode()
         # Send the request for processing and handle any errors
@@ -48,45 +33,20 @@ class KittenServer(object):
         response_str = json.dumps(response)
         socket.send_unicode(response_str)
 
+    def listen_forever(self):  # pragma: nocover
+        try:
+            socket = self.get_socket()
+            while not self.torn:
+                self.listen(socket)
+
+        finally:
+            self.log.exception('Server died.')
+            self.teardown()
+
     def handle_request(self, request_str):
         request = KittenRequest(request_str)
         self.queue.put(request)
         return request.ack()
-
-    def setup(self):
-        self.log.info('Setting up server')
-        self.setup_signals()
-        self.setup_pidfile()
-
-    def setup_signals(self):
-        signal.signal(signal.SIGINT, self.signal_handler)
-        signal.signal(signal.SIGTERM, self.signal_handler)
-
-    def setup_pidfile(self):
-        pid = str(os.getpid())
-        self.log.debug('Pid: {0}', pid)
-        with open(self.pidfile(), 'w') as pidfile:
-            pidfile.write(pid)
-
-    def signal_handler(self, signum, frame):
-        names = {2: 'SIGINT', 15: 'SIGTERM'}
-        self.log.warning('Recieved {0}', names[signum])
-        self.teardown()
-
-    def teardown(self):
-        if self.torn:
-            return
-
-        self.torn = True
-        self.log.info('Tearing down server')
-        self.teardown_pidfile()
-
-    def teardown_pidfile(self):
-        self.log.debug('Removing pidfile')
-        os.remove(self.pidfile())
-
-    def pidfile(self):
-        return conf.pidfile(self.ns.port)
 
     def get_socket(self):
         context = zmq.Context()
@@ -97,6 +57,41 @@ class KittenServer(object):
         self.log.info('Listening on {0}', host)
 
         return socket
+
+    def setup(self):
+        self.log.info('Setting up server')
+        self.setup_signals()
+        self.setup_pidfile()
+
+    def teardown(self):
+        if self.torn:
+            return
+
+        self.torn = True
+        self.log.info('Tearing down server')
+        self.teardown_pidfile()
+
+    def setup_signals(self):
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
+
+    def signal_handler(self, signum, frame):
+        names = {2: 'SIGINT', 15: 'SIGTERM'}
+        self.log.warning('Recieved {0}', names[signum])
+        self.teardown()
+
+    def pidfile(self):
+        return conf.pidfile(self.ns.port)
+
+    def setup_pidfile(self):
+        pid = str(os.getpid())
+        self.log.debug('Pid: {0}', pid)
+        with open(self.pidfile(), 'w') as pidfile:
+            pidfile.write(pid)
+
+    def teardown_pidfile(self):
+        self.log.debug('Removing pidfile')
+        os.remove(self.pidfile())
 
 
 def setup_parser(subparsers):
