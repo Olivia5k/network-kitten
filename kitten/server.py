@@ -5,7 +5,7 @@ import zmq.green as zmq
 import logbook
 
 import gevent
-import gevent.pool
+from gevent.pool import Pool
 from gevent.queue import Queue
 
 from kitten import conf
@@ -18,7 +18,7 @@ class KittenServer(object):
 
     def __init__(self, ns):
         self.ns = ns
-        self.pool = gevent.pool.Pool(5)
+        self.pool = Pool(5)
         self.queue = Queue()
 
     def listen(self, socket):
