@@ -8,6 +8,7 @@ from kitten import server
 from kitten.server import KittenServer
 from kitten.server import setup_parser
 from kitten.server import execute_parser
+from kitten.request import KittenRequest
 from kitten.validation import Validator
 
 
@@ -231,3 +232,15 @@ class TestServerUtils(object):
 
         server.is_running(ns)
         isfile.assert_called_once_with(pidfile.return_value)
+
+
+class TestServerQueue(object):
+    def setup_method(self, method):
+        self.server = KittenServer(MagicMock(), MagicMock())
+
+    def test_handle_puts_requests_in_queue(self):
+        data = '{}'
+        ret = self.server.handle_request(data)
+        assert self.server.queue.qsize() == 1
+        assert self.server.queue.get() == KittenRequest(data)
+        assert ret == {'ack': True}
