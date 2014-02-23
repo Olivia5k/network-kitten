@@ -80,18 +80,19 @@ class KittenServer(object):
         self.log.warning('Recieved {0}', names[signum])
         self.teardown()
 
+    @property
     def pidfile(self):
         return conf.pidfile(self.ns.port)
 
     def setup_pidfile(self):
         pid = str(os.getpid())
         self.log.debug('Pid: {0}', pid)
-        with open(self.pidfile(), 'w') as pidfile:
+        with open(self.pidfile, 'w') as pidfile:
             pidfile.write(pid)
 
     def teardown_pidfile(self):
         self.log.debug('Removing pidfile')
-        os.remove(self.pidfile())
+        os.remove(self.pidfile)
 
 
 def setup_parser(subparsers):
