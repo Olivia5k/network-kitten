@@ -2,12 +2,12 @@ import os
 import json
 import signal
 import zmq.green as zmq
-import zmq as zmq_orig  # For exceptions
 import jsonschema
 import logbook
 
 import gevent
 import gevent.pool
+from gevent.queue import Queue
 
 from kitten import conf
 import kitten.validation
@@ -32,8 +32,9 @@ class KittenServer(object):
         self.ns = ns
         self.validator = validator
         self.pool = gevent.pool.Pool(5)
+        self.queue = Queue()
 
-    def listen_forever(self, port=conf.PORT):  # pragma: nocover
+    def listen_forever(self):  # pragma: nocover
         """
         Listen on the socket forever
 
@@ -43,16 +44,9 @@ class KittenServer(object):
         """
 
         try:
-            socket = self.get_socket(port)
-
+            socket = self.get_socket()
             while not self.torn:
                 self.listen(socket)
-
-            # Let the last requests finish.
-            self.log.warning('Torn. Will wait for last requests.')
-            gevent.wait()
-            self.log.warning('Done.')
-            return
 
         except Exception:
             # TODO: Move into the loop
@@ -64,19 +58,7 @@ class KittenServer(object):
 
     def listen(self, socket):
         try:
-            # Listen on the socket; the actual wait is here
-            self.log.debug('recv_unicode...')
             request_str = socket.recv_unicode()
-        except zmq_orig.error.ZMQError:
-            # This is for graceful exit of the socket
-            self.log.info('Socket interrupted')
-            raise
-            return False
-
-        self.pool.spawn(self.recieve, socket, request_str)
-
-    def recieve(self, socket, request_str):
-        try:
             # Send the request for processing and handle any errors
             response = self.handle_request(request_str)
         except RequestError as e:
@@ -179,11 +161,11 @@ class KittenServer(object):
     def pidfile(self):
         return conf.pidfile(self.ns.port)
 
-    def get_socket(self, port):
+    def get_socket(self):
         context = zmq.Context()
         socket = context.socket(zmq.REP)
 
-        host = 'tcp://*:{0}'.format(port)
+        host = 'tcp://*:{0}'.format(self.ns.port)
         socket.bind(host)
         self.log.info('Listening on {0}', host)
 
@@ -226,6 +208,7 @@ def execute_parser(ns):
 
 def is_running(ns):
     # Use existence of the pidfile to determine if the server is running
+    # TODO: Also check if that PID is actually alive.
     return os.path.isfile(conf.pidfile(ns.port))
 
 
@@ -236,7 +219,8 @@ def start_server(ns):
     server = KittenServer(ns, validator)
     server.setup()
 
-    server.listen_forever(ns.port)
+    gevent.spawn(server.listen_forever)
+    gevent.wait()
 
 
 def stop_server(ns):
