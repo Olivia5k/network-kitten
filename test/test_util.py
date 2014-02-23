@@ -16,4 +16,8 @@ class TestAutoParadigmMixin(object):
         ret = self.apm.paradigms
 
         assert 'hehe' in ret
-        assert 'hehe' in self.apm._paradigms
+
+    def test_override(self):
+        self.apm.paradigms = {'hehe': True}
+
+        assert self.apm._paradigms == {'hehe': True}
