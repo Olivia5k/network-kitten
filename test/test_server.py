@@ -2,7 +2,7 @@ import json
 import signal
 
 from mock import MagicMock, patch, call, mock_open
-from test.utils import MockParadigm, builtin
+from test.utils import builtin
 
 from kitten import server
 from kitten.server import KittenServer
