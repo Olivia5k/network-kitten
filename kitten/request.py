@@ -52,10 +52,10 @@ class KittenRequest(object):
         """
         Handle a request.
 
-        This is the meat of the server. This function will take an incoming
-        request, decode it, validate it, send it to the appropriate paradigm
-        and handler, get the response, validate the response, encode the
-        response and return it back to the server.
+        This function will take an incoming request, decode it, validate it,
+        send it to the appropriate paradigm and handler, get the response,
+        validate the response, encode the response and return it back to the
+        server.
 
         Takes a JSON string as input and returns a dictionary.
 
