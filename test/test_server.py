@@ -1,36 +1,14 @@
 import json
-import jsonschema
-import pytest
 import signal
-import zmq
 
 from mock import MagicMock, patch, call, mock_open
-from test.utils import MockValidator, builtin
+from test.utils import MockParadigm, builtin
 
 from kitten import server
-from kitten.paradigm import Paradigm
-from kitten.paradigm import annotate
 from kitten.server import KittenServer
 from kitten.server import setup_parser
 from kitten.server import execute_parser
-from kitten.request import RequestError
 from kitten.validation import Validator
-
-
-class MockParadigm(Paradigm):
-    validator = MockValidator()
-
-    @annotate
-    def method_request(self, request):
-        return {
-            'code': 'OK'
-        }
-
-    @annotate
-    def method_response(self, request):
-        return {
-            'code': 'OK'
-        }
 
 
 class TestServerIntegration(object):

@@ -1,6 +1,8 @@
 from kitten import db
 from kitten.client import KittenClient
 from kitten.validation import Validator
+from kitten.paradigm import Paradigm
+from kitten.paradigm import annotate
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -74,6 +76,22 @@ class MockValidator(Validator):
 
     def method_response(self):
         return {'code': {'type': 'string'}}
+
+
+class MockParadigm(Paradigm):
+    validator = MockValidator()
+
+    @annotate
+    def method_request(self, request):
+        return {
+            'code': 'OK'
+        }
+
+    @annotate
+    def method_response(self, request):
+        return {
+            'code': 'OK'
+        }
 
 
 def builtin(target):
