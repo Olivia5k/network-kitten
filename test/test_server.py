@@ -15,9 +15,6 @@ class TestServerIntegration(object):
     def setup_method(self, method):
         self.validator = Validator()
         self.server = KittenServer(MagicMock(), self.validator)
-        self.server.paradigms = {
-            'mock': MockParadigm()
-        }
 
     def test_handle_request(self):
         request = json.dumps({'paradigm': 'mock', 'method': 'method'})
@@ -112,7 +109,6 @@ class TestServerArgparserIntegration(object):
 class TestServerSetupIntegration(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock(), MagicMock())
-        self.server.setup_paradigms = MagicMock()
         self.server.setup_signals = MagicMock()
         self.server.setup_pidfile = MagicMock()
 

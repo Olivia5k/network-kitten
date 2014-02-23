@@ -12,10 +12,9 @@ from kitten import conf
 import kitten.validation
 import kitten.node
 from kitten.request import KittenRequest
-from kitten.util import AutoParadigmMixin
 
 
-class KittenServer(AutoParadigmMixin):
+class KittenServer(object):
     log = logbook.Logger('KittenServer')
     torn = False
 
@@ -56,7 +55,6 @@ class KittenServer(AutoParadigmMixin):
 
     def setup(self):
         self.log.info('Setting up server')
-        self.paradigms = self.get_paradigms()
         self.setup_signals()
         self.setup_pidfile()
 
