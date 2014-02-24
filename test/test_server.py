@@ -281,3 +281,27 @@ class TestServerWorker(object):
 
         assert ret is False
         self.server.pool.join.assert_called_once_with()
+
+
+class TestServerWorkerLoop(object):
+    def setup_method(self, method):
+        self.server = KittenServer(MagicMock())
+
+    def test_working(self):
+        # This is semi-inconvenient, but it's the only smooth way to check that
+        # the state has changed. Infinite loops and all that jazz.
+        assert self.server.working is None
+        self.server.work = MagicMock(side_effect=Exception)
+        with pytest.raises(Exception):
+            self.server.work_forever()
+
+        self.server.work.assert_called_once_with()
+        assert self.server.working is True
+
+    def test_stop_working(self):
+        assert self.server.working is None
+        self.server.work = MagicMock(return_value=None)
+        self.server.work_forever()
+
+        self.server.work.assert_called_once_with()
+        assert self.server.working is False
