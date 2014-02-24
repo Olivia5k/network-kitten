@@ -51,6 +51,8 @@ class KittenRequest(AutoParadigmMixin):
         response_str = json.dumps(response)
         socket.send_unicode(response_str)
 
+        # TODO: Handle response
+
     def handle(self):
         """
         Handle a request.
@@ -93,7 +95,9 @@ class KittenRequest(AutoParadigmMixin):
         return response
 
     def ack(self):
-        return {'ack': True}
+        return {
+            'ack': True
+        }
 
     def validate_request(self, request):  # pragma: nocover
         self.log.info('Validating request...')

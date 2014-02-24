@@ -46,13 +46,41 @@ class KittenServer(object):
         self.queue.put(request)
         return request.ack()
 
-    def get_socket(self):
-        context = zmq.Context()
-        socket = context.socket(zmq.REP)
+    def work(self):
+        self.working = True
+        while True:
+            if self.queue.empty():
+                self.log.debug('About to sleep')
+                gevent.sleep(1.0)  # TODO: Configurable
+                self.log.debug('Slept')
+                continue
 
-        host = 'tcp://*:{0}'.format(self.ns.port)
+            request = self.queue.get()
+
+            # If the item found is None, it's time to exit!
+            # StopIteration would have been nice given that it is the gevent
+            # way of doing it, but it is cumbersome to test with, so None it is
+            if request is None:
+                self.log.warning('Stopping worker pool.')
+                self.log.warning('Waiting for workers to finish.')
+                self.pool.join()
+                break
+
+            socket = self.get_socket(zmq.REQ, request.host)
+            self.pool.spawn(request.process, socket)
+
+        self.working = False
+        self.log.warning('Worker pool stopped.')
+
+    def get_socket(self, kind=zmq.REP, host=None):
+        context = zmq.Context()
+        socket = context.socket(kind)
+
+        if not host:
+            host = 'tcp://*:{0}'.format(self.ns.port)
+
         socket.bind(host)
-        self.log.info('Listening on {0}', host)
+        self.log.info('Bound {1} on {0}', host, kind)
 
         return socket
 
@@ -68,6 +96,7 @@ class KittenServer(object):
         self.torn = True
         self.log.info('Tearing down server')
         self.teardown_pidfile()
+        self.queue.put(None)
 
     def setup_signals(self):
         signal.signal(signal.SIGINT, self.signal_handler)
