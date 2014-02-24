@@ -47,27 +47,32 @@ class KittenServer(object):
         return request.ack()
 
     def work(self):
+        if self.queue.empty():
+            self.log.debug('About to sleep')
+            gevent.sleep(1.0)  # TODO: Configurable
+            self.log.debug('Slept')
+            return True
+
+        request = self.queue.get()
+
+        # If the item found is None, it's time to exit all workers!
+        # StopIteration would have been nice given that it is the gevent
+        # way of doing it, but it is cumbersome to test with, so None it is!
+        if request is None:
+            self.log.warning('Stopping worker pool.')
+            self.log.warning('Waiting for workers to finish.')
+            self.pool.join()
+            return False
+
+        socket = self.get_socket(zmq.REQ, request.host)
+        self.pool.spawn(request.process, socket)
+        return True
+
+    def work_forever(self):
         self.working = True
-        while True:
-            if self.queue.empty():
-                self.log.debug('About to sleep')
-                gevent.sleep(1.0)  # TODO: Configurable
-                self.log.debug('Slept')
-                continue
 
-            request = self.queue.get()
-
-            # If the item found is None, it's time to exit!
-            # StopIteration would have been nice given that it is the gevent
-            # way of doing it, but it is cumbersome to test with, so None it is
-            if request is None:
-                self.log.warning('Stopping worker pool.')
-                self.log.warning('Waiting for workers to finish.')
-                self.pool.join()
-                break
-
-            socket = self.get_socket(zmq.REQ, request.host)
-            self.pool.spawn(request.process, socket)
+        while self.work():
+            pass
 
         self.working = False
         self.log.warning('Worker pool stopped.')

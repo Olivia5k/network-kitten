@@ -247,24 +247,37 @@ class TestServerQueue(object):
 class TestServerWorker(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock())
-
-    def test_handle_request_and_exit(self):
-        request, pool = MagicMock(), MagicMock()
-        sock_ret = 'sex as a weapon'
-        get_socket = MagicMock(return_value=sock_ret)
-
-        self.server.get_socket = get_socket
-        self.server.pool = pool
         self.server.queue = MagicMock()
         self.server.queue.empty = MagicMock(return_value=False)
-        self.server.queue.get = MagicMock(side_effect=[request, None])
+        self.server.pool = MagicMock()
+        self.server.get_socket = MagicMock()
 
-        assert self.server.working is None
-        self.server.work()
+    @patch('gevent.sleep')
+    def test_empty_queue(self, sleep):
+        self.server.queue.empty.return_value = True
+        ret = self.server.work()
 
+        assert ret is True
+        sleep.assert_called_once_with(1.0)
+
+    def test_handle_request(self):
+        request = MagicMock()
+        sock_ret = 'sex as a weapon'
+        self.server.get_socket.return_value = sock_ret
+        self.server.queue.get.return_value = request
+
+        ret = self.server.work()
+
+        assert ret is True
         self.server.pool.spawn.assert_called_once_with(
             request.process,
             sock_ret,
         )
+
+    def test_exit(self):
+        self.server.queue.get.return_value = None
+
+        ret = self.server.work()
+
+        assert ret is False
         self.server.pool.join.assert_called_once_with()
-        assert self.server.working is False
