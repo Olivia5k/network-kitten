@@ -72,7 +72,7 @@ class KittenServer(object):
         self.working = True
 
         while self.work():
-            pass
+            pass  # pragma: nocover
 
         self.working = False
         self.log.warning('Worker pool stopped.')
