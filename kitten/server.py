@@ -14,12 +14,13 @@ from kitten.request import KittenRequest
 
 class KittenServer(object):
     log = logbook.Logger('KittenServer')
-    torn = False
 
     def __init__(self, ns):
         self.ns = ns
         self.pool = Pool(5)
         self.queue = Queue()
+        self.torn = False
+        self.working = None
 
     def listen(self, socket):
         request_str = socket.recv_unicode()
