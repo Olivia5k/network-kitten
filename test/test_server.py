@@ -63,15 +63,15 @@ class TestServerArgparserIntegration(object):
         self.server = MagicMock()
         self.ns = MagicMock()
 
-    @pytest.mark.skipif(True, reason='broken')
+    @patch('gevent.spawn')
     @patch.object(server, 'KittenServer')
-    def test_execute_parser_start_server(self, ks):
+    def test_execute_parser_start_server(self, ks, spawn):
         self.ns.server_command = 'start'
         ks.return_value = self.server
         execute_parser(self.ns)
 
         ks.assert_called_once_with(self.ns)
-        assert self.server.listen_forever.called
+        spawn.assert_called_once_with(self.server.listen_forever)
 
     @patch('os.path.exists')
     @patch('os.kill')
