@@ -20,7 +20,6 @@ class KittenServer(object):
         self.ns = ns
         self.pool = Pool(5)
         self.queue = Queue()
-        self.torn = False
         self.working = None
 
     def listen(self, socket):
@@ -32,14 +31,18 @@ class KittenServer(object):
         response_str = json.dumps(response)
         socket.send_unicode(response_str)
 
+        return True
+
     def listen_forever(self):
         try:
             socket = self.get_socket()
-            while not self.torn:
-                self.listen(socket)
+            while self.listen(socket):
+                pass
+
+        except Exception:
+            self.log.exception('Server died.')
 
         finally:
-            self.log.exception('Server died.')
             self.teardown()
 
     def handle_request(self, request_str):

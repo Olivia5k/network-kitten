@@ -198,6 +198,9 @@ class TestServerListen(object):
         self.server = KittenServer(MagicMock())
         self.socket = MagicMock()
 
+        self.server.get_socket = self.socket
+        self.server.teardown = MagicMock()
+
     def test_listen(self):
         recv = 'lel'
         fake = {}
@@ -208,6 +211,22 @@ class TestServerListen(object):
         self.socket.recv_unicode.assert_called_once_with()
         self.server.handle_request.assert_called_once_with(recv)
         self.socket.send_unicode.assert_called_once_with('{}')
+
+    def test_listen_forever(self):
+        self.server.listen = MagicMock(side_effect=[True, True, False])
+        self.server.listen_forever()
+
+        assert self.server.listen.call_count == 3
+        self.server.teardown.assert_called_once_with()
+
+    def test_listen_forever_exception(self):
+        self.server.listen = MagicMock(side_effect=[True, True, Exception])
+        self.server.log = MagicMock()
+        self.server.listen_forever()
+
+        assert self.server.listen.call_count == 3
+        assert self.server.log.exception.call_count == 1
+        self.server.teardown.assert_called_once_with()
 
 
 class TestServerUtils(object):
