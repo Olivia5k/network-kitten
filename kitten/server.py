@@ -76,7 +76,7 @@ class KittenServer(object):
         free = self.pool.free_count()
         if free == self.pool.size:
             self.log.info('Workers idle.')
-            return
+            return True
 
         timeout = 5  # TODO: Configurable
         count = self.pool.size - free

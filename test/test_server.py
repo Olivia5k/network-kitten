@@ -306,3 +306,24 @@ class TestServerWorkerLoop(object):
 
         self.server.work.assert_called_once_with()
         assert self.server.working is False
+
+
+class TestServerWorkerTeardown(object):
+    def setup_method(self, method):
+        self.server = KittenServer(MagicMock())
+        self.server.pool = MagicMock()
+
+    def test_teardown_no_workers_running(self):
+        self.server.pool.size = 12
+        self.server.pool.free_count.return_value = self.server.pool.size
+        ret = self.server.teardown_workers()
+
+        assert ret is True
+
+    def test_teardown_workers_running(self):
+        self.server.pool.size = 12
+        self.server.pool.free_count.return_value = 1
+        ret = self.server.teardown_workers()
+
+        assert ret is None
+        self.server.pool.kill.assert_called_once_with(timeout=5)
