@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 import signal
@@ -31,7 +32,7 @@ class KittenServer(object):
         response_str = json.dumps(response)
         socket.send_unicode(response_str)
 
-    def listen_forever(self):  # pragma: nocover
+    def listen_forever(self):
         try:
             socket = self.get_socket()
             while not self.torn:
@@ -54,18 +55,9 @@ class KittenServer(object):
             return True
 
         request = self.queue.get()
-
-        # If the item found is None, it's time to exit all workers!
-        # StopIteration would have been nice given that it is the gevent
-        # way of doing it, but it is cumbersome to test with, so None it is!
-        if request is None:
-            self.log.warning('Stopping worker pool.')
-            self.log.warning('Waiting for workers to finish.')
-            self.pool.join()
-            return False
-
         socket = self.get_socket(zmq.REQ, request.host)
         self.pool.spawn(request.process, socket)
+
         return True
 
     def work_forever(self):
@@ -76,6 +68,18 @@ class KittenServer(object):
 
         self.working = False
         self.log.warning('Worker pool stopped.')
+
+    def teardown_workers(self):
+        free = self.pool.free_count()
+        if free == self.pool.size:
+            self.log.info('Workers idle.')
+            return
+
+        timeout = 5  # TODO: Configurable
+        count = self.pool.size - free
+        self.log.info('Giving {1} requests {0}s to finish', timeout, count)
+        self.pool.kill(timeout=timeout)
+        self.log.info('Requests finished or timed out.')
 
     def get_socket(self, kind=zmq.REP, host=None):
         context = zmq.Context()
@@ -95,13 +99,11 @@ class KittenServer(object):
         self.setup_pidfile()
 
     def teardown(self):
-        if self.torn:
-            return
-
-        self.torn = True
         self.log.info('Tearing down server')
+        self.teardown_workers()
         self.teardown_pidfile()
-        self.queue.put(None)
+        self.log.info('Server torn. Exiting.')
+        sys.exit(0)
 
     def setup_signals(self):
         signal.signal(signal.SIGINT, self.signal_handler)

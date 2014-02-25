@@ -154,29 +154,19 @@ class TestServerSignalHandling(object):
         assert self.server.teardown.called
 
 
-class TestServerTeardownIntegration(object):
+class TestServerTeardown(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock())
+
+    @patch('sys.exit')
+    def test_teardown(self, exit):
         self.server.teardown_pidfile = MagicMock()
-
-    def test_teardown_when_not_torn_down(self):
-        assert not self.server.torn
+        self.server.teardown_workers = MagicMock()
         self.server.teardown()
 
-        assert self.server.torn
-        assert self.server.teardown_pidfile.called
-
-    def test_teardown_when_already_torn_down(self):
-        self.server.torn = True
-        self.server.teardown()
-
-        assert self.server.torn
-        assert not self.server.teardown_pidfile.called
-
-
-class TestServerTeardownUnits(object):
-    def setup_method(self, method):
-        self.server = KittenServer(MagicMock())
+        self.server.teardown_pidfile.assert_called_once_with()
+        self.server.teardown_workers.assert_called_once_with()
+        exit.assert_called_once_with(0)
 
     @patch('kitten.conf.pidfile')
     @patch('os.remove')
@@ -273,14 +263,6 @@ class TestServerWorker(object):
             request.process,
             sock_ret,
         )
-
-    def test_exit(self):
-        self.server.queue.get.return_value = None
-
-        ret = self.server.work()
-
-        assert ret is False
-        self.server.pool.join.assert_called_once_with()
 
 
 class TestServerWorkerLoop(object):
