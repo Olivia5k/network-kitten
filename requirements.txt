@@ -1,0 +1,14 @@
+Logbook==0.6.0
+SQLAlchemy==0.9.3
+cov-core==1.7
+coverage==3.7.1
+gevent==1.0
+greenlet==0.4.2
+jsonschema==2.3.0
+mock==1.0.1
+py==1.4.20
+pytest==2.5.2
+pytest-cov==1.6
+pyzmq==14.0.1
+tox==1.7.0
+virtualenv==1.11.4
