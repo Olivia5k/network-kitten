@@ -92,7 +92,11 @@ class KittenServer(object):
             host = 'tcp://*:{0}'.format(self.ns.port)
 
         socket.bind(host)
-        self.log.info('Bound {1} on {0}', host, kind)
+        self.log.info(
+            'Bound {1} on {0}',
+            host,
+            {zmq.REP: 'REP', zmq.REQ: 'REQ'}.get(kind, kind)
+        )
 
         return socket
 
