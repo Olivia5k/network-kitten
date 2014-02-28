@@ -230,14 +230,52 @@ class TestServerListen(object):
 
 
 class TestServerUtils(object):
+    def setup_method(self, method):
+        self.ns = MagicMock()
+        self.ns.port = 18237
+        self.pid = 1209
+
     @patch('kitten.conf.pidfile')
     @patch('os.path.isfile')
-    def test_is_running(self, isfile, pidfile):
-        ns = MagicMock()
-        ns.port = 18237
+    def test_is_running_no_pidfile(self, isfile, pidfile):
+        fake = mock_open(read_data=str(self.pid))
+        isfile.return_value = False
 
-        server.is_running(ns)
+        with patch(builtin('open'), fake):
+            ret = server.is_running(self.ns)
+
         isfile.assert_called_once_with(pidfile.return_value)
+        assert ret is False
+
+    @patch('kitten.conf.pidfile')
+    @patch('os.path.isdir')
+    @patch('os.path.isfile')
+    def test_is_running_pidfile_but_no_dir(self, isfile, isdir, pidfile):
+        fake = mock_open(read_data=str(self.pid))
+        isfile.return_value = True
+        isdir.return_value = False
+
+        with patch(builtin('open'), fake):
+            ret = server.is_running(self.ns)
+
+        isfile.assert_called_once_with(pidfile.return_value)
+        isdir.assert_called_once_with('/proc/{0}'.format(self.pid))
+        assert ret is False
+
+    @patch('kitten.conf.pidfile')
+    @patch('os.path.isdir')
+    @patch('os.path.isfile')
+    def test_is_running_pidfile_and_dir(self, isfile, isdir, pidfile):
+        fake = mock_open(read_data=str(self.pid))
+        isfile.return_value = True
+        isdir.return_value = True
+
+        with patch(builtin('open'), fake):
+            ret = server.is_running(self.ns)
+
+        isfile.assert_called_once_with(pidfile.return_value)
+        isdir.assert_called_once_with('/proc/{0}'.format(self.pid))
+        assert ret is True
 
 
 class TestServerQueue(object):

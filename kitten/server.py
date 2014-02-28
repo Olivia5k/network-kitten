@@ -157,9 +157,16 @@ def execute_parser(ns):
 
 
 def is_running(ns):
-    # Use existence of the pidfile to determine if the server is running
-    # TODO: Also check if that PID is actually alive.
-    return os.path.isfile(conf.pidfile(ns.port))
+    # Use existence of the pidfile to determine if the server is running,
+    # also check if the corresponding /proc dir is there.
+    filename = conf.pidfile(ns.port)
+    if os.path.isfile(filename):
+        with open(filename) as pidfile:
+            pid = int(pidfile.read())
+            if os.path.isdir('/proc/{0}'.format(pid)):
+                return True
+
+    return False
 
 
 def start_server(ns):
