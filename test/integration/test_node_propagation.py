@@ -1,4 +1,21 @@
+from kitten.server import KittenServer
+
+from gevent.pool import Group
+
+from mock import MagicMock
+
+
 class TestPropagation(object):
+    def setup_method(self, method):
+        self.servers = Group()
+
+        for port in range(4):
+            ns = MagicMock()
+            ns.port = 9812 + port
+
+            server = KittenServer(ns)
+            self.servers.spawn(server.listen_forever)
+
     def test_node_propagation(self):
         """
         Tests that check node propagation
