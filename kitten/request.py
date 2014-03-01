@@ -1,6 +1,13 @@
 import json
 import jsonschema
 import logbook
+import datetime
+
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Text
 
 import kitten.validation
 from kitten.util import AutoParadigmMixin
@@ -18,6 +25,12 @@ class RequestError(Exception):
 class KittenRequest(AutoParadigmMixin):
     log = logbook.Logger('KittenRequest')
     validator = kitten.validation.Validator()
+
+    id = Column(Integer(), primary_key=True)
+    sender = Column(String(255))
+    request = Column(Text())
+    response = Column(Text())
+    created = Column(DateTime, default=datetime.datetime.now)
 
     def __init__(self, request_str):
         self.request_str = request_str
