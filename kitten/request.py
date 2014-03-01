@@ -21,9 +21,31 @@ class KittenRequest(AutoParadigmMixin):
 
     def __init__(self, request_str):
         self.request_str = request_str
+        self._request = None
+
+        self.exception = None
 
     def __eq__(self, other):
         return self.request_str == other.request_str
+
+    @property
+    def request(self):
+        if self._request:
+            return self._request
+
+        try:
+            request = json.loads(self.request_str)
+        except ValueError:
+            self.log.error('Invalid JSON request: {0}', self.request_str)
+            self.exception = (
+                RequestError,
+                'INVALID_REQUEST',
+                'Unable to decode JSON request.'
+            )
+            return None
+
+        self._request = request
+        return request
 
     def process(self, socket):
         try:
@@ -68,26 +90,23 @@ class KittenRequest(AutoParadigmMixin):
 
         self.log.info('Getting new request...')
 
-        try:
-            request = json.loads(self.request_str)
-        except ValueError:
-            self.log.error('Invalid JSON request: {0}', self.request_str)
-            raise RequestError(
-                'INVALID_REQUEST',
-                'Unable to decode JSON request.'
-            )
+        self.log.debug('Got request: {0}', self.request)
 
-        self.log.debug('Got request: {0}', request)
+        # If there was something wrong with the request, the JSON parser in
+        # self.request will store the exception so that this can handle it.
+        if self.exception:
+            exc, params = self.exception[0], self.exception[1:]
+            raise exc(*params)
 
-        self.validate_request(request)
+        self.validate_request(self.request)
 
-        paradigm_name = request['paradigm']
-        method_name = request['method'] + '_response'
+        paradigm_name = self.request['paradigm']
+        method_name = self.request['method'] + '_response'
 
         paradigm = self.paradigms[paradigm_name]
         method = getattr(paradigm, method_name)
 
-        response = method(request)
+        response = method(self.request)
 
         self.validate_response(response)
 

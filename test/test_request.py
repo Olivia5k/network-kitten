@@ -95,3 +95,35 @@ class TestRequestHandle(RequestMixin):
         paradigm.scale_response.assert_called_once_with(data)
         res.assert_called_once_with(response)
         assert ret == response
+
+
+class TestRequestProperty(RequestMixin):
+    """
+    Test the self.request property
+
+    """
+
+    @patch('json.loads')
+    def test_cache(self, loads):
+        fake = MagicMock()
+        request = KittenRequest('')
+        request._request = fake
+        assert request.request is fake
+        assert loads.call_count == 0
+
+    @patch('json.loads')
+    def test_exception(self, loads):
+        request = KittenRequest('')
+        loads.side_effect = ValueError
+
+        assert request.exception is None
+        ret = request.request
+        assert ret is None
+        assert request.exception[0] is RequestError
+        assert request.exception[1] == "INVALID_REQUEST"
+
+    def test_loading(self):
+        request = KittenRequest('{"lel": true}')
+        ret = request.request
+        assert ret == {'lel': True}
+        assert request.exception is None
