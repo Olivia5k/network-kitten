@@ -7,12 +7,10 @@ from mock import MagicMock, patch
 from kitten.server import KittenServer
 from kitten.request import RequestError
 from kitten.request import KittenRequest
-from kitten.validation import Validator
 
 
 class RequestMixin(object):
     def setup_method(self, method):
-        self.validator = Validator()
         self.server = KittenServer(MagicMock())
 
 
