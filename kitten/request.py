@@ -53,22 +53,19 @@ class KittenRequest(AutoParadigmMixin):
 
         """
 
-        if self._request:
-            return self._request
+        if not self._request:
+            try:
+                self._request = json.loads(self.request_str)
+            except ValueError:
+                self.log.error('Invalid JSON request: {0}', self.request_str)
+                self.exception = (
+                    RequestError,
+                    'INVALID_REQUEST',
+                    'Unable to decode JSON request.'
+                )
+                return None
 
-        try:
-            request = json.loads(self.request_str)
-        except ValueError:
-            self.log.error('Invalid JSON request: {0}', self.request_str)
-            self.exception = (
-                RequestError,
-                'INVALID_REQUEST',
-                'Unable to decode JSON request.'
-            )
-            return None
-
-        self._request = request
-        return request
+        return self._request
 
     @property
     def response_str(self):
@@ -82,13 +79,11 @@ class KittenRequest(AutoParadigmMixin):
 
         """
 
-        if self._response_str:
-            return self._response_str
+        if not self._response_str:
+            if not self.response:
+                return None
+            self._response_str = json.dumps(self.response)
 
-        if not self.response:
-            return None
-
-        self._response_str = json.dumps(self.response)
         return self._response_str
 
     def process(self, socket):
