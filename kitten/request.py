@@ -45,6 +45,14 @@ class KittenRequest(AutoParadigmMixin):
 
     @property
     def request(self):
+        """
+        Conversion of the request into a Python dictionary.
+
+        Will not raise Exceptions from invalid JSON, but rather store them
+        as a state on the request to ease up handling of DB stuffs.
+
+        """
+
         if self._request:
             return self._request
 
