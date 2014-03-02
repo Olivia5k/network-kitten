@@ -36,6 +36,8 @@ class KittenRequest(AutoParadigmMixin):
         self.request_str = request_str
         self._request = None
 
+        self.response = None
+        self._response_str = None
         self.exception = None
 
     def __eq__(self, other):
@@ -59,6 +61,27 @@ class KittenRequest(AutoParadigmMixin):
 
         self._request = request
         return request
+
+    @property
+    def response_str(self):
+        """
+        String representation of the response.
+
+        No error checking for the JSON is done since we are assuming that the
+        input is proper given that it is, y'know, from us.
+
+        If self.response is falsy, None will be returned.
+
+        """
+
+        if self._response_str:
+            return self._response_str
+
+        if not self.response:
+            return None
+
+        self._response_str = json.dumps(self.response)
+        return self._response_str
 
     def process(self, socket):
         try:

@@ -127,3 +127,32 @@ class TestRequestProperty(RequestMixin):
         ret = request.request
         assert ret == {'lel': True}
         assert request.exception is None
+
+
+class TestResponseStrProperty(RequestMixin):
+    """
+    Test the self.response_str property
+
+    """
+
+    @patch('json.dumps')
+    def test_cache(self, dumps):
+        fake = MagicMock()
+        request = KittenRequest('')
+        request._response_str = fake
+        assert request.response_str is fake
+        assert dumps.call_count == 0
+
+    @patch('json.dumps')
+    def test_none_input(self, dumps):
+        request = KittenRequest('')
+        request.response = ""
+
+        ret = request.response_str
+        assert ret is None
+
+    def test_dumping(self):
+        request = KittenRequest('')
+        request.response = {'lel': True}
+        ret = request.response_str
+        assert ret == '{"lel": true}'
