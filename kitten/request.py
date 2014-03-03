@@ -9,8 +9,10 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
 
-import kitten.validation
+from kitten.db import Base
+from kitten.db import Session
 from kitten.util import AutoParadigmMixin
+from kitten.validation import Validator
 
 
 class RequestError(Exception):
@@ -22,15 +24,19 @@ class RequestError(Exception):
         return "{0}: {1}".format(self.code, self.message)
 
 
-class KittenRequest(AutoParadigmMixin):
-    log = logbook.Logger('KittenRequest')
-    validator = kitten.validation.Validator()
+class KittenRequestItem(Base):
+    __tablename__ = 'request'
 
     id = Column(Integer(), primary_key=True)
     sender = Column(String(255))
     request = Column(Text())
     response = Column(Text())
     created = Column(DateTime, default=datetime.datetime.now)
+
+
+class KittenRequest(AutoParadigmMixin):
+    log = logbook.Logger('KittenRequest')
+    validator = Validator()
 
     def __init__(self, request_str):
         self.request_str = request_str

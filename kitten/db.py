@@ -17,6 +17,11 @@ def setup_core(ns):
     node.Node.metadata.bind = engine
     node.Node.metadata.create_all()
 
+    # XXX: This is... no.
+    from kitten import request
+    request.KittenRequestItem.metadata.bind = engine
+    request.KittenRequestItem.metadata.create_all()
+
     address = '{0}:{1}'.format(conf.ADDRESS, ns.port)
 
     session = Session()
