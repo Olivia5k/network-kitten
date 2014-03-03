@@ -41,7 +41,7 @@ class KittenRequest(AutoParadigmMixin):
         self.exception = None
 
     def __eq__(self, other):
-        return self.request_str == other.request_str
+        return self.request == other.request
 
     @property
     def request(self):
