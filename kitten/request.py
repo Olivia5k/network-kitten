@@ -67,8 +67,7 @@ class KittenRequest(AutoParadigmMixin):
 
         return self._request
 
-    @property
-    def response_str(self):
+    def _get_response_string(self):
         """
         String representation of the response.
 
@@ -85,6 +84,13 @@ class KittenRequest(AutoParadigmMixin):
             self._response_str = json.dumps(self.response)
 
         return self._response_str
+
+    def _set_response_str(self, item):
+        # This is basically to make sure that we can still mock this
+        self._response_str = item
+        return self._response_str
+
+    response_str = property(_get_response_string, _set_response_str)
 
     def process(self, socket):
         try:
