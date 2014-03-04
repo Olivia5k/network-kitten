@@ -27,6 +27,7 @@ class KittenServer(object):
     def start(self):
         self.setup()
         self.listener = gevent.spawn(self.listen_forever)
+        self.worker = gevent.spawn(self.work_forever)
 
         return self.listener
 
