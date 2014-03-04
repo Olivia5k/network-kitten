@@ -8,6 +8,8 @@ from kitten.server import KittenServer
 from kitten.request import RequestError
 from kitten.request import KittenRequest
 
+from test.mocks import MockDatabaseMixin
+
 
 class RequestMixin(object):
     def setup_method(self, method):
@@ -156,3 +158,24 @@ class TestResponseStrProperty(RequestMixin):
         request.response = {'lel': True}
         ret = request.response_str
         assert ret == '{"lel": true}'
+
+
+class TestRequestItem(MockDatabaseMixin):
+    @patch('kitten.request.Session')
+    @patch('kitten.request.KittenRequestItem')
+    def test_save(self, kri, session):
+        request = KittenRequest('request')
+        request.response_str = 'response'
+
+        request.save()
+
+        kri.assert_called_once_with(
+            sender='',
+            request='request',
+            response='response',
+        )
+
+        srv = session.return_value
+        srv.add.assert_called_once_with(kri.return_value)
+        srv.commit.assert_called_once_with()
+        srv.close.assert_called_once_with()

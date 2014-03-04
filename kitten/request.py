@@ -157,12 +157,31 @@ class KittenRequest(AutoParadigmMixin):
         paradigm = self.paradigms[paradigm_name]
         method = getattr(paradigm, method_name)
 
-        response = method(self.request)
+        self.response = method(self.request)
 
-        self.validate_response(response)
+        self.validate_response(self.response)
 
-        self.log.debug('Returning response: {0}', response)
-        return response
+        self.log.debug('Returning response: {0}', self.response)
+        return self.response
+
+    def save(self):
+        """
+        Commit the request to the database
+
+        """
+
+        kwargs = {
+            'sender': "",
+            'request': self.request_str,
+            'response': self.response_str,
+        }
+
+        session = Session()
+        item = KittenRequestItem(**kwargs)
+
+        session.add(item)
+        session.commit()
+        session.close()
 
     def ack(self):
         return {
