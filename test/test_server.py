@@ -160,10 +160,12 @@ class TestServerTeardown(object):
     @patch('sys.exit')
     def test_teardown(self, exit):
         self.server.teardown_pidfile = MagicMock()
+        self.server.teardown_listener = MagicMock()
         self.server.teardown_workers = MagicMock()
         self.server.teardown()
 
         self.server.teardown_pidfile.assert_called_once_with()
+        self.server.teardown_listener.assert_called_once_with()
         self.server.teardown_workers.assert_called_once_with()
         exit.assert_called_once_with(0)
 
@@ -172,6 +174,11 @@ class TestServerTeardown(object):
     def test_teardown_pidfile(self, remove, pidfile):
         self.server.teardown_pidfile()
         remove.assert_called_once_with(pidfile.return_value)
+
+    def test_teardown_listener(self):
+        self.server.listener = MagicMock()
+        self.server.teardown_listener()
+        self.server.listener.kill.assert_called_once_with(timeout=5)
 
 
 class TestServerSocket(object):
