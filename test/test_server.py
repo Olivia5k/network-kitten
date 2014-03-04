@@ -1,4 +1,3 @@
-import json
 import signal
 import pytest
 
@@ -17,7 +16,7 @@ class TestServerIntegration(object):
         self.server = KittenServer(MagicMock())
 
     def test_handle_request(self):
-        request = json.dumps({'paradigm': 'mock', 'method': 'method'})
+        request = {'paradigm': 'mock', 'method': 'method'}
         result = self.server.handle_request(request)
 
         assert result == {
@@ -217,15 +216,15 @@ class TestServerListen(object):
         self.server.teardown = MagicMock()
 
     def test_listen(self):
-        recv = 'lel'
+        recv = {'pat': 'benatar'}
         fake = {}
-        self.socket.recv_unicode = MagicMock(return_value=recv)
+        self.socket.recv_json = MagicMock(return_value=recv)
         self.server.handle_request = MagicMock(return_value=fake)
 
         self.server.listen(self.socket)
-        self.socket.recv_unicode.assert_called_once_with()
+        self.socket.recv_json.assert_called_once_with()
         self.server.handle_request.assert_called_once_with(recv)
-        self.socket.send_unicode.assert_called_once_with('{}')
+        self.socket.send_json.assert_called_once_with({})
 
     def test_listen_forever(self):
         self.server.listen = MagicMock(side_effect=[True, True, False])

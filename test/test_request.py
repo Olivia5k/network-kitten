@@ -1,11 +1,9 @@
-import json
 import jsonschema
 import pytest
 
 from mock import MagicMock, patch
 
 from kitten.server import KittenServer
-from kitten.request import RequestError
 from kitten.request import KittenRequest
 
 from test.mocks import MockDatabaseMixin
@@ -17,13 +15,8 @@ class RequestMixin(object):
 
 
 class TestRequestValidation(RequestMixin):
-    def test_handle_request_invalid_json(self):
-        request = KittenRequest('{')
-        with pytest.raises(RequestError):
-            request.handle()
-
     def test_handle_request_invalid_validation(self):
-        request = KittenRequest('{"hehe": "fail"}')
+        request = KittenRequest({"hehe": "fail"})
         with pytest.raises(jsonschema.exceptions.ValidationError):
             request.handle()
 
@@ -35,29 +28,18 @@ class TestRequestProcess(RequestMixin):
         super(TestRequestProcess, self).setup_method(method)
 
     def check_code(self, code, msg):
-        check = json.dumps({'code': code, 'message': msg})
-        self.socket.send_unicode.assert_called_once_with(check)
+        check = {'code': code, 'message': msg}
+        self.socket.send_json.assert_called_once_with(check)
 
-    @patch('json.dumps')
     @patch.object(KittenRequest, 'handle')
-    def test_process(self, handle, dumps):
+    def test_process(self, handle):
         response = MagicMock()
-        dummy = 'liz'
-        dumps.return_value = dummy
         handle.return_value = response
 
         self.request.process(self.socket)
 
         handle.assert_called_once_with()
-        dumps.assert_called_once_with(response)
-        self.socket.send_unicode.assert_called_once_with(dummy)
-
-    @patch.object(KittenRequest, 'handle')
-    def test_process_requesterror(self, handle):
-        code, msg = 'CODE', 'msg'
-        handle.side_effect = RequestError(code, msg)
-        self.request.process(self.socket)
-        self.check_code(code, msg)
+        self.socket.send_json.assert_called_once_with(response)
 
     @patch.object(KittenRequest, 'handle')
     def test_process_validationerror(self, handle):
@@ -86,7 +68,7 @@ class TestRequestHandle(RequestMixin):
         paradigm = MagicMock()
         paradigm.scale_response.return_value = response
 
-        request = KittenRequest('{}')
+        request = KittenRequest(data)
         request.paradigms = {p: paradigm}
 
         loads.return_value = data
@@ -99,81 +81,17 @@ class TestRequestHandle(RequestMixin):
         assert ret == response
 
 
-class TestRequestProperty(RequestMixin):
-    """
-    Test the self.request property
-
-    """
-
-    @patch('json.loads')
-    def test_cache(self, loads):
-        fake = MagicMock()
-        request = KittenRequest('')
-        request._request = fake
-        assert request.request is fake
-        assert loads.call_count == 0
-
-    @patch('json.loads')
-    def test_exception(self, loads):
-        request = KittenRequest('')
-        loads.side_effect = ValueError
-
-        assert request.exception is None
-        ret = request.request
-        assert ret is None
-        assert request.exception[0] is RequestError
-        assert request.exception[1] == "INVALID_REQUEST"
-
-    def test_loading(self):
-        request = KittenRequest('{"lel": true}')
-        ret = request.request
-        assert ret == {'lel': True}
-        assert request.exception is None
-
-
-class TestResponseStrProperty(RequestMixin):
-    """
-    Test the self.response_str property
-
-    """
-
-    @patch('json.dumps')
-    def test_cache(self, dumps):
-        fake = MagicMock()
-        request = KittenRequest('')
-        request._response_str = fake
-        assert request.response_str is fake
-        assert dumps.call_count == 0
-
-    @patch('json.dumps')
-    def test_none_input(self, dumps):
-        request = KittenRequest('')
-        request.response = ""
-
-        ret = request.response_str
-        assert ret is None
-
-    def test_dumping(self):
-        request = KittenRequest('')
-        request.response = {'lel': True}
-        ret = request.response_str
-        assert ret == '{"lel": true}'
-
-
 class TestRequestItem(MockDatabaseMixin):
     @patch('kitten.request.Session')
     @patch('kitten.request.KittenRequestItem')
     def test_save(self, kri, session):
-        request = KittenRequest('request')
-        request.response_str = 'response'
+        mreq, mres = MagicMock(), MagicMock()
+        request = KittenRequest(mreq)
+        request.response = mres
 
         request.save()
 
-        kri.assert_called_once_with(
-            sender='',
-            request='request',
-            response='response',
-        )
+        kri.assert_called_once_with(sender='', request=mreq, response=mres)
 
         srv = session.return_value
         srv.add.assert_called_once_with(kri.return_value)

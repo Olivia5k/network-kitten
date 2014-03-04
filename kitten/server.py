@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 import signal
 import zmq.green as zmq
 import logbook
@@ -37,13 +36,10 @@ class KittenServer(object):
         self.teardown(exit)
 
     def listen(self, socket):
-        request_str = socket.recv_unicode()
+        request = socket.recv_json()
         # Send the request for processing and handle any errors
-        response = self.handle_request(request_str)
-
-        # Dump as JSON string and send it back
-        response_str = json.dumps(response)
-        socket.send_unicode(response_str)
+        response = self.handle_request(request)
+        socket.send_json(response)
 
         return True
 
@@ -62,8 +58,8 @@ class KittenServer(object):
     def teardown_listener(self):
         self.listener.kill(timeout=5)  # TODO: Configurable
 
-    def handle_request(self, request_str):
-        request = KittenRequest(request_str)
+    def handle_request(self, request):
+        request = KittenRequest(request)
         self.queue.put(request)
         return request.ack()
 

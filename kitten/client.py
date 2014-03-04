@@ -10,11 +10,9 @@ class KittenClient(object):
     timeout = 2000
 
     def send(self, address, request):
-        request = json.dumps(request)
-
         self.log.info('Sending request on {1}: {0}', request, address)
         socket = self.connect(address)
-        socket.send_unicode(request)
+        socket.send_json(request)
         self.log.info('Waiting for reply')
 
         events = self.poll_reply(socket)
@@ -25,13 +23,13 @@ class KittenClient(object):
             self.close(socket)
             raise RequestError('TIMEOUT', msg)
 
-        response = ''.join(t[0].recv_unicode() for t in events)
-        ret = json.loads(response)
+        # TODO: Can JSON events come in multiparts? Probably not?
+        response = events[0][0].recv_json()
 
-        self.log.info(ret)
+        self.log.info(response)
         self.close(socket)
 
-        return ret
+        return response
 
     def close(self, socket):
         socket.close()

@@ -166,14 +166,17 @@ class TestNodeMessagingIntegration(MockKittenClientMixin):
     def test_ping(self, ctx, poller):
         ctx.return_value = self.context
 
-        j = '{"pong": true, "method": "ping", "paradigm": "node"}'
-        self.socket.recv_unicode.return_value = j
+        self.socket.recv_json.return_value = {
+            "pong": True,
+            "method": "ping",
+            "paradigm": "node",
+        }
         poller.return_value.poll.return_value = [(self.socket, 1)]
 
         ret = self.node.ping()
 
         assert ret is True
-        assert self.socket.send_unicode.called
+        assert self.socket.send_json.called
 
         # Make sure that it adds the tcp:// part.
         self.socket.connect.assert_called_once_with(
@@ -246,23 +249,17 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
     @patch('zmq.green.Context')
     def test_sync_no_new_nodes(self, ctx, poller, create):
         ctx.return_value = self.context
-
-        self.socket.recv_unicode.return_value = json.dumps({
+        request = {
             'method': 'sync',
             'paradigm': 'node',
             'nodes': [],
-        })
+        }
+        self.socket.recv_json.return_value = request
         poller.return_value.poll.return_value = [(self.socket, 1)]
 
         self.node.sync()
 
-        self.socket.send_unicode.assert_called_once_with(
-            json.dumps({
-                'method': 'sync',
-                'paradigm': 'node',
-                'nodes': [],
-            })
-        )
+        self.socket.send_json.assert_called_once_with(request)
         assert not create.called
 
     @patch.object(Node, 'create')
@@ -272,22 +269,20 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         ctx.return_value = self.context
         node = 'node.js'
 
-        self.socket.recv_unicode.return_value = json.dumps({
+        self.socket.recv_json.return_value = {
             'method': 'sync',
             'paradigm': 'node',
             'nodes': [node],
-        })
+        }
         poller.return_value.poll.return_value = [(self.socket, 1)]
 
         self.node.sync()
 
-        self.socket.send_unicode.assert_called_once_with(
-            json.dumps({
-                'nodes': [],
-                'method': 'sync',
-                'paradigm': 'node',
-            })
-        )
+        self.socket.send_json.assert_called_once_with({
+            'nodes': [],
+            'method': 'sync',
+            'paradigm': 'node',
+        })
 
         create.assert_called_once_with(node, True)
 
@@ -298,22 +293,20 @@ class TestNodeSync(NodeTestBase, MockKittenClientMixin):
         ctx.return_value = self.context
         nodes = ['neverland.ca.org', 'node.js', 'hehe.people.nu']
 
-        self.socket.recv_unicode.return_value = json.dumps({
+        self.socket.recv_json.return_value = {
             'method': 'sync',
             'paradigm': 'node',
             'nodes': nodes,
-        })
+        }
         poller.return_value.poll.return_value = [(self.socket, 1)]
 
         self.node.sync()
 
-        self.socket.send_unicode.assert_called_once_with(
-            json.dumps({
-                'nodes': [],
-                'method': 'sync',
-                'paradigm': 'node',
-            })
-        )
+        self.socket.send_json.assert_called_once_with({
+            'nodes': [],
+            'method': 'sync',
+            'paradigm': 'node',
+        })
 
         calls = create.call_args_list
         assert len(calls) == 3
