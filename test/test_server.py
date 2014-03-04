@@ -63,15 +63,14 @@ class TestServerArgparserIntegration(object):
         self.server = MagicMock()
         self.ns = MagicMock()
 
-    @patch('gevent.spawn')
     @patch.object(server, 'KittenServer')
-    def test_execute_parser_start_server(self, ks, spawn):
+    def test_execute_parser_start_server(self, ks):
         self.ns.server_command = 'start'
         ks.return_value = self.server
         execute_parser(self.ns)
 
         ks.assert_called_once_with(self.ns)
-        spawn.assert_called_once_with(self.server.listen_forever)
+        self.server.start.assert_called_once_with()
 
     @patch('os.path.exists')
     @patch('os.kill')
@@ -365,3 +364,17 @@ class TestServerWorkerTeardown(object):
 
         assert ret is None
         self.server.pool.kill.assert_called_once_with(timeout=5)
+
+
+class TestServerStart(object):
+    def setup_method(self, method):
+        self.server = KittenServer(MagicMock())
+
+    @patch('gevent.spawn')
+    def test_function(self, spawn):
+        self.server.setup = MagicMock()
+
+        ret = self.server.start()
+
+        assert ret is spawn.return_value
+        self.server.setup.assert_called_once_with()

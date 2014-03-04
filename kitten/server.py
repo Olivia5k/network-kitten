@@ -22,6 +22,14 @@ class KittenServer(object):
         self.queue = Queue()
         self.working = None
 
+        self.listener = None
+
+    def start(self):
+        self.setup()
+        self.listener = gevent.spawn(self.listen_forever)
+
+        return self.listener
+
     def listen(self, socket):
         request_str = socket.recv_unicode()
         # Send the request for processing and handle any errors
@@ -173,9 +181,7 @@ def start_server(ns):
     logbook.info('Starting kitten server on port {0}'.format(ns.port))
 
     server = KittenServer(ns)
-    server.setup()
-
-    gevent.spawn(server.listen_forever)
+    server.start()
     gevent.wait()
 
 
