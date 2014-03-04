@@ -7,16 +7,28 @@ import jsonschema
 from jsonschema.exceptions import ValidationError
 
 
+class DRY(object):
+    string = {'type': 'string'}
+
+
 class Validator(object):
     core_schema = {
         'type': 'object',
         'properties': {
-            'paradigm': {
-                'type': 'string',
+            'id': {
+                'type': 'object',
+                'properties': {
+                    'uuid': DRY.string,
+                    'to': DRY.string,
+                    'from': DRY.string,
+                    'kind': {
+                        'enum': ['req',  'rep'],
+                    },
+                },
+                'additionalProperties': False,
             },
-            'method': {
-                'type': 'string',
-            },
+            'paradigm': DRY.string,
+            'method': DRY.string,
         },
         'additionalProperties': False,
     }
