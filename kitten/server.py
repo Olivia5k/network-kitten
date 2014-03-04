@@ -23,6 +23,7 @@ class KittenServer(object):
         self.working = None
 
         self.listener = None
+        self.worker = None
 
     def start(self):
         self.setup()
