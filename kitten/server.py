@@ -30,9 +30,9 @@ class KittenServer(object):
 
         return self.listener
 
-    def stop(self):
+    def stop(self, exit=True):
         self.log.warning('Stopping server')
-        self.teardown()
+        self.teardown(exit)
 
     def listen(self, socket):
         request_str = socket.recv_unicode()
@@ -120,13 +120,14 @@ class KittenServer(object):
         self.setup_signals()
         self.setup_pidfile()
 
-    def teardown(self):
+    def teardown(self, exit=True):
         self.log.info('Tearing down server')
         self.teardown_workers()
         self.teardown_pidfile()
         self.teardown_listener()
         self.log.info('Server torn. Exiting.')
-        sys.exit(0)
+        if exit:
+            sys.exit(0)
 
     def setup_signals(self):
         signal.signal(signal.SIGINT, self.signal_handler)

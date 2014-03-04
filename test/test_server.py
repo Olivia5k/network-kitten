@@ -169,6 +169,15 @@ class TestServerTeardown(object):
         self.server.teardown_workers.assert_called_once_with()
         exit.assert_called_once_with(0)
 
+    @patch('sys.exit')
+    def test_teardown_without_exit(self, exit):
+        self.server.teardown_pidfile = MagicMock()
+        self.server.teardown_listener = MagicMock()
+        self.server.teardown_workers = MagicMock()
+        self.server.teardown(False)
+
+        assert not exit.called
+
     @patch('kitten.conf.pidfile')
     @patch('os.remove')
     def test_teardown_pidfile(self, remove, pidfile):
@@ -373,12 +382,12 @@ class TestServerWorkerTeardown(object):
         self.server.pool.kill.assert_called_once_with(timeout=5)
 
 
-class TestServerStart(object):
+class TestServerStartStop(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock())
 
     @patch('gevent.spawn')
-    def test_function(self, spawn):
+    def test_start(self, spawn):
         self.server.setup = MagicMock()
 
         ret = self.server.start()
