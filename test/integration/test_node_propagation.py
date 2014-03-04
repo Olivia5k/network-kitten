@@ -1,23 +1,26 @@
+from kitten.client import KittenClient
 from kitten.server import KittenServer
-
-from gevent.pool import Group
 
 from mock import MagicMock
 
 
 class TestPropagation(object):
     def setup_method(self, method):
-        self.servers = Group()
+        self.servers = []
+        self.port = 9812
+        self.request = {
+            'hehe': True
+        }
 
         for port in range(4):
             ns = MagicMock()
-            ns.port = 9812 + port
+            ns.port = self.port + port
 
             server = KittenServer(ns)
-            self.servers.spawn(server.listen_forever)
+            self.servers.append(server)
 
     def teardown_method(self, method):
-        self.servers.kill(timeout=1)
+        map(lambda s: s.stop(exit=False), self.servers)
 
     def test_node_propagation(self):
         """
@@ -30,4 +33,8 @@ class TestPropagation(object):
 
         """
 
-        pass
+        map(lambda s: s.start(), self.servers)
+
+        client = KittenClient()
+        response = client.send('localhost:{0}'.format(self.port), self.request)
+        print(response)
