@@ -16,6 +16,9 @@ class TestPropagation(object):
             server = KittenServer(ns)
             self.servers.spawn(server.listen_forever)
 
+    def teardown_method(self, method):
+        self.servers.kill(timeout=1)
+
     def test_node_propagation(self):
         """
         Tests that check node propagation
