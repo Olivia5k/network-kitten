@@ -14,6 +14,10 @@ from kitten.request import KittenRequest
 
 class KittenServer(object):
     log = logbook.Logger('KittenServer')
+    halting_signals = {
+        signal.SIGINT: 'SIGINT',
+        signal.SIGTERM: 'SIGTERM',
+    }
 
     def __init__(self, ns):
         self.ns = ns
@@ -128,13 +132,12 @@ class KittenServer(object):
             sys.exit(0)
 
     def setup_signals(self):
-        signal.signal(signal.SIGINT, self.signal_handler)
-        signal.signal(signal.SIGTERM, self.signal_handler)
+        for sig in self.halting_signals:
+            signal.signal(sig, self.signal_handler)
 
     def signal_handler(self, signum, frame):
-        names = {2: 'SIGINT', 15: 'SIGTERM'}
-        self.log.warning('Recieved {0}', names[signum])
-        self.stop()
+        self.log.warning('Recieved {0}', self.halting_signals[signum])
+        self.stop(True)
 
     @property
     def pidfile(self):
