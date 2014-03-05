@@ -44,6 +44,18 @@ class KittenRequest(AutoParadigmMixin):
     def __eq__(self, other):
         return self.request == other.request
 
+    @property
+    def host(self):
+        kind = self.request['id']['kind']
+        if kind == 'req':
+            key = 'to'
+        elif kind == 'res':
+            key = 'from'
+        else:
+            raise NotImplemented('Unknown request kind: {0}'.format(kind))
+
+        return 'tcp://{0}'.format(self.request['id'][key])
+
     def process(self, socket):
         try:
             response = self.process_request()
