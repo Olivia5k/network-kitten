@@ -12,9 +12,7 @@ from kitten.db import Session
 from kitten.db import Base
 from kitten.paradigm import Paradigm
 from kitten.paradigm import annotate
-from kitten.request import RequestError
 from kitten.validation import Validator
-from jsonschema.exceptions import ValidationError
 
 
 class NodeValidator(Validator):
@@ -23,8 +21,8 @@ class NodeValidator(Validator):
 
     def ping_response(self):
         return {
-            'pong': {
-                'type': 'boolean'
+            'code': {
+                'enum': ['OK', 'FAILED'],
             }
         }
 
@@ -54,12 +52,12 @@ class NodeParadigm(Paradigm):
 
     @annotate
     def ping_request(self, request):
-        return {}
+        return request
 
     @annotate
     def ping_response(self, request):
         return {
-            'pong': True
+            'code': 'OK'
         }
 
     @annotate
@@ -170,14 +168,9 @@ class Node(Base):
 
         """
 
-        try:
-            request = self.paradigm.ping_request({})
-            response = self.message(request)
-            return response['pong']
-
-        except (KeyError, RequestError, ValidationError):
-            self.log.exception('Ping failed')
-            return False
+        request = self.paradigm.ping_request({})
+        response = self.message(request)
+        return response['code'] == 'OK'
 
     def sync(self):
         """

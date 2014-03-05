@@ -1,5 +1,4 @@
 import pytest
-import json
 
 from kitten.conf import DEFAULT_PORT
 from kitten.node import Node
@@ -167,7 +166,7 @@ class TestNodeMessagingIntegration(MockKittenClientMixin):
         ctx.return_value = self.context
 
         self.socket.recv_json.return_value = {
-            "pong": True,
+            "code": "OK",
             "method": "ping",
             "paradigm": "node",
         }
@@ -183,27 +182,6 @@ class TestNodeMessagingIntegration(MockKittenClientMixin):
             'tcp://{0}'.format(self.host),
         )
 
-    @patch.object(Node, 'message')
-    def test_ping_keyerror(self, message):
-        message.side_effect = KeyError
-        ret = self.node.ping()
-
-        assert ret is False
-
-    @patch.object(Node, 'message')
-    def test_ping_requesterror(self, message):
-        message.side_effect = RequestError('code', 'msg')
-        ret = self.node.ping()
-
-        assert ret is False
-
-    @patch.object(Node, 'message')
-    def test_ping_validationerror(self, message):
-        message.side_effect = ValidationError('msg')
-        ret = self.node.ping()
-
-        assert ret is False
-
 
 class TestNodeParadigmPing(object):
     def setup_method(self, method):
@@ -212,7 +190,7 @@ class TestNodeParadigmPing(object):
     def test_ping_response(self):
         ret = self.paradigm.ping_response({})
         assert ret == {
-            'pong': True,
+            "code": "OK",
             'method': 'ping',
             'paradigm': 'node',
         }
