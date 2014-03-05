@@ -331,7 +331,7 @@ class TestServerWorker(object):
         ret = self.server.work()
 
         assert ret is True
-        sleep.assert_called_once_with(1.0)
+        sleep.assert_called_once_with(0.1)
 
     def test_handle_request(self):
         request = MagicMock()

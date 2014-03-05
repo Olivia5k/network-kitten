@@ -76,8 +76,7 @@ class KittenServer(object):
 
     def work(self):
         if self.queue.empty():
-            self.log.debug('About to sleep')
-            gevent.sleep(1.0)  # TODO: Configurable
+            gevent.sleep(0.1)  # TODO: Configurable
             self.log.debug('Slept')
             return True
 
