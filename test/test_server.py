@@ -153,36 +153,40 @@ class TestServerSignalHandling(object):
         assert self.server.teardown.called
 
 
-class TestServerTeardown(object):
+class TestServerTeardownUmbrella(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock())
-
-    @patch('sys.exit')
-    def test_teardown(self, exit):
         self.server.teardown_pidfile = MagicMock()
         self.server.teardown_listener = MagicMock()
         self.server.teardown_workers = MagicMock()
-        self.server.teardown()
 
+    def check(self):
         self.server.teardown_pidfile.assert_called_once_with()
         self.server.teardown_listener.assert_called_once_with()
         self.server.teardown_workers.assert_called_once_with()
+
+    @patch('sys.exit')
+    def test_teardown(self, exit):
+        self.server.teardown()
+        self.check()
         exit.assert_called_once_with(0)
+
+    @patch('sys.exit')
+    def test_teardown_without_exit(self, exit):
+        self.server.teardown(False)
+        self.check()
+        assert not exit.called
+
+
+class TestServerTeardownUnits(object):
+    def setup_method(self, method):
+        self.server = KittenServer(MagicMock())
 
     @patch('sys.exit')
     def test_teardown_when_torn(self, exit):
         self.server.torn = True
         ret = self.server.teardown()
         assert ret is False
-        assert not exit.called
-
-    @patch('sys.exit')
-    def test_teardown_without_exit(self, exit):
-        self.server.teardown_pidfile = MagicMock()
-        self.server.teardown_listener = MagicMock()
-        self.server.teardown_workers = MagicMock()
-        self.server.teardown(False)
-
         assert not exit.called
 
     @patch('kitten.conf.pidfile')
