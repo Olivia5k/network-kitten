@@ -60,6 +60,8 @@ class KittenRequest(AutoParadigmMixin):
                 'message': str(e),
             }
 
+        response = self.decorate_response(response)
+
         # Send it back!
         socket.send_json(response)
 
@@ -115,6 +117,15 @@ class KittenRequest(AutoParadigmMixin):
         return {
             'ack': True
         }
+
+    def decorate_response(self, response):
+        response.update({
+            'id': self.request['id'],
+            'paradigm': self.request['paradigm'],
+            'method': self.request['method'],
+        })
+
+        return response
 
     def validate_request(self, request):  # pragma: nocover
         self.log.info('Validating request...')

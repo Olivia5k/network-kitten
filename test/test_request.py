@@ -24,11 +24,22 @@ class TestRequestValidation(RequestMixin):
 class TestRequestProcess(RequestMixin):
     def setup_method(self, method):
         self.socket = MagicMock()
-        self.request = KittenRequest('{}')
+        self.dry_request = {
+            'id': {
+                'uuid': 'uuid-hehe-etc',
+                'from': 'all of us',
+                'to': 'all of you',
+                'kind': 'request',
+            },
+            'paradigm': 'test',
+            'method': 'test',
+        }
+        self.request = KittenRequest(self.dry_request)
         super(TestRequestProcess, self).setup_method(method)
 
     def check_code(self, code, msg):
         check = {'code': code, 'message': msg}
+        check.update(self.dry_request)
         self.socket.send_json.assert_called_once_with(check)
 
     @patch.object(KittenRequest, 'handle')
