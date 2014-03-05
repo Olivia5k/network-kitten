@@ -14,16 +14,17 @@ from kitten.request import KittenRequest
 
 class KittenServer(object):
     log = logbook.Logger('KittenServer')
-    halting_signals = {
-        signal.SIGINT: 'SIGINT',
-        signal.SIGTERM: 'SIGTERM',
-    }
+    halting_signals = (
+        signal.SIGINT,
+        signal.SIGTERM,
+    )
 
     def __init__(self, ns):
         self.ns = ns
         self.pool = Pool(5)
         self.queue = Queue()
         self.working = None
+        self.torn = False
 
         self.listener = None
         self.worker = None
@@ -60,6 +61,7 @@ class KittenServer(object):
             self.teardown()
 
     def teardown_listener(self):
+        self.log.info('Stopping socket listener.')
         self.listener.kill(timeout=5)  # TODO: Configurable
 
     def handle_request(self, request):
@@ -92,7 +94,8 @@ class KittenServer(object):
     def teardown_workers(self):
         free = self.pool.free_count()
         if free == self.pool.size:
-            self.log.info('Workers idle.')
+            self.log.info('Workers idle. Killing without timeout.')
+            self.pool.kill()
             return True
 
         timeout = 5  # TODO: Configurable
@@ -123,20 +126,29 @@ class KittenServer(object):
         self.setup_pidfile()
 
     def teardown(self, exit=True):
+        if self.torn:
+            # The greenlets will try to exit as well upon signals, so we need
+            # to keep state to make sure that we don't loopingly kill
+            # everything.
+            return False
+
+        self.torn = True
         self.log.info('Tearing down server')
         self.teardown_workers()
         self.teardown_pidfile()
         self.teardown_listener()
-        self.log.info('Server torn. Exiting.')
+        self.log.info('Server teardown complete.')
+
         if exit:
+            self.log.info('Exiting.')
             sys.exit(0)
 
     def setup_signals(self):
         for sig in self.halting_signals:
-            signal.signal(sig, self.signal_handler)
+            gevent.signal(sig, self.signal_handler)
 
-    def signal_handler(self, signum, frame):
-        self.log.warning('Recieved {0}', self.halting_signals[signum])
+    def signal_handler(self):
+        self.log.warning('Recieved halting signal')
         self.stop(True)
 
     @property

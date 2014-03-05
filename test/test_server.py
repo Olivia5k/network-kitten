@@ -1,5 +1,6 @@
 import signal
 import pytest
+import gevent
 
 from mock import MagicMock, patch, call, mock_open
 from test.utils import builtin
@@ -121,7 +122,7 @@ class TestServerSetupUnits(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock())
 
-    @patch.object(signal, 'signal')
+    @patch.object(gevent, 'signal')
     def test_setup_signals(self, signal):
         self.server.setup_signals()
 
@@ -148,7 +149,7 @@ class TestServerSignalHandling(object):
         self.server.teardown = MagicMock()
 
     def test_signal_handler_calls_teardown(self):
-        self.server.signal_handler(2, MagicMock())
+        self.server.signal_handler()
         assert self.server.teardown.called
 
 
@@ -167,6 +168,13 @@ class TestServerTeardown(object):
         self.server.teardown_listener.assert_called_once_with()
         self.server.teardown_workers.assert_called_once_with()
         exit.assert_called_once_with(0)
+
+    @patch('sys.exit')
+    def test_teardown_when_torn(self, exit):
+        self.server.torn = True
+        ret = self.server.teardown()
+        assert ret is False
+        assert not exit.called
 
     @patch('sys.exit')
     def test_teardown_without_exit(self, exit):
