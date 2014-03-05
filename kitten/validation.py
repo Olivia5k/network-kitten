@@ -29,6 +29,10 @@ class Validator(object):
             },
             'paradigm': DRY.string,
             'method': DRY.string,
+            'message': {
+                'type': 'string',
+                'optional': True,
+            },
         },
         'additionalProperties': False,
     }
