@@ -9,6 +9,7 @@ mock==1.0.1
 py==1.4.20
 pytest==2.5.2
 pytest-cov==1.6
+pytest-timeout==0.3
 pyzmq==14.0.1
 tox==1.7.0
 virtualenv==1.11.4
