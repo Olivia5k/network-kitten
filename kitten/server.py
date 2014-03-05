@@ -13,7 +13,6 @@ from kitten.request import KittenRequest
 
 
 class KittenServer(object):
-    log = logbook.Logger('KittenServer')
     halting_signals = (
         signal.SIGINT,
         signal.SIGTERM,
@@ -33,6 +32,8 @@ class KittenServer(object):
         # Greenlets; to be populated when started
         self.listener = None
         self.worker = None
+
+        self.log = logbook.Logger('Server-{0}'.format(self.ns.port))
 
     def start(self):
         self.setup()
