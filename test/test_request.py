@@ -18,7 +18,7 @@ class TestRequestValidation(RequestMixin):
     def test_handle_request_invalid_validation(self):
         request = KittenRequest({"hehe": "fail"})
         with pytest.raises(jsonschema.exceptions.ValidationError):
-            request.handle()
+            request.process_request()
 
 
 class TestRequestProcess(RequestMixin):
@@ -42,27 +42,30 @@ class TestRequestProcess(RequestMixin):
         check.update(self.dry_request)
         self.socket.send_json.assert_called_once_with(check)
 
-    @patch.object(KittenRequest, 'handle')
-    def test_process(self, handle):
+    @patch.object(KittenRequest, 'process_confirm')
+    @patch.object(KittenRequest, 'process_request')
+    def test_process(self, pr, pc):
         response = MagicMock()
-        handle.return_value = response
+        pr.return_value = response
 
         self.request.process(self.socket)
 
-        handle.assert_called_once_with()
+        pr.assert_called_once_with()
         self.socket.send_json.assert_called_once_with(response)
+        self.socket.recv_json.assert_called_once_with()
+        pc.assert_called_once_with(self.socket.recv_json.return_value)
 
-    @patch.object(KittenRequest, 'handle')
-    def test_process_validationerror(self, handle):
+    @patch.object(KittenRequest, 'process_request')
+    def test_process_validationerror(self, pr):
         msg = 'Hehehehee'
-        handle.side_effect = jsonschema.exceptions.ValidationError(msg)
+        pr.side_effect = jsonschema.exceptions.ValidationError(msg)
         self.request.process(self.socket)
         self.check_code('VALIDATION_ERROR', msg)
 
-    @patch.object(KittenRequest, 'handle')
-    def test_process_exception(self, handle):
+    @patch.object(KittenRequest, 'process_request')
+    def test_process_exception(self, process_request):
         msg = '*giggles*'
-        handle.side_effect = Exception(msg)
+        process_request.side_effect = Exception(msg)
         self.request.process(self.socket)
         self.check_code('UNKNOWN_ERROR', msg)
 
@@ -84,7 +87,7 @@ class TestRequestHandle(RequestMixin):
 
         loads.return_value = data
 
-        ret = request.handle()
+        ret = request.process_request()
 
         req.assert_called_once_with(data)
         paradigm.scale_response.assert_called_once_with(data)

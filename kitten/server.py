@@ -21,11 +21,16 @@ class KittenServer(object):
 
     def __init__(self, ns):
         self.ns = ns
+
+        # Workers and queues
         self.pool = Pool(5)
         self.queue = Queue()
+
+        # States
         self.working = None
         self.torn = False
 
+        # Greenlets; to be populated when started
         self.listener = None
         self.worker = None
 

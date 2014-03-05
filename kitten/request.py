@@ -46,7 +46,7 @@ class KittenRequest(AutoParadigmMixin):
 
     def process(self, socket):
         try:
-            response = self.handle()
+            response = self.process_request()
         except jsonschema.exceptions.ValidationError as e:
             self.log.exception('Validation error')
             response = {
@@ -60,21 +60,21 @@ class KittenRequest(AutoParadigmMixin):
                 'message': str(e),
             }
 
-        response = self.decorate_response(response)
-
         # Send it back!
+        response = self.decorate_response(response)
         socket.send_json(response)
 
-        # TODO: Handle response
+        # Wait for confirmation
+        confirm = socket.recv_json()
+        self.process_confirm(confirm)
 
-    def handle(self):
+    def process_request(self):
         """
-        Handle a request.
+        Process the request.
 
-        This function will take an incoming request, decode it, validate it,
+        This function will take an incoming request, decode it,
         send it to the appropriate paradigm and handler, get the response,
-        validate the response, encode the response and return it back to the
-        server.
+        validate the response, and return it.
 
         """
 
@@ -93,6 +93,15 @@ class KittenRequest(AutoParadigmMixin):
 
         self.log.debug('Returning response: {0}', self.response)
         return self.response
+
+    def process_confirm(self, response):
+        """
+        Process the confirmation for the request
+
+        """
+
+        # TODO: Error handling? Committing to db?
+        pass
 
     def save(self):
         """
