@@ -22,7 +22,10 @@ class Validator(object):
                     'to': DRY.string,
                     'from': DRY.string,
                     'kind': {
-                        'enum': ['req',  'rep'],
+                        'enum': ['request', 'response'],
+                    },
+                    'phase': {
+                        'enum': ['payload', 'ack'],
                     },
                 },
                 'additionalProperties': False,
