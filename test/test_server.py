@@ -1,6 +1,7 @@
 import signal
 import pytest
 import gevent
+import zmq
 
 from mock import MagicMock, patch, call, mock_open
 from test.utils import builtin
@@ -204,19 +205,27 @@ class TestServerTeardownUnits(object):
 class TestServerSocket(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock())
+        self.port = 3307
+        self.server.ns.port = self.port
+        self.ctx = MagicMock()
 
     @patch('zmq.green.Context')
-    def test_get_socket(self, Context):
-        port = 3307
-        self.server.ns.port = port
-        ctx = MagicMock()
-        Context.return_value = ctx
-
+    def test_get_rep_socket(self, Context):
+        Context.return_value = self.ctx
         ret = self.server.get_socket()
-        socket = ctx.socket()
+        socket = self.ctx.socket()
 
         assert ret is socket
-        socket.bind.assert_called_once_with('tcp://*:{0}'.format(port))
+        socket.bind.assert_called_once_with('tcp://*:{0}'.format(self.port))
+
+    @patch('zmq.green.Context')
+    def test_get_req_socket(self, Context):
+        Context.return_value = self.ctx
+        ret = self.server.get_socket(kind=zmq.REQ)
+        socket = self.ctx.socket()
+
+        assert ret is socket
+        socket.connect.assert_called_once_with('tcp://*:{0}'.format(self.port))
 
 
 class TestServerListen(object):
