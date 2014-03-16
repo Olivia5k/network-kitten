@@ -48,9 +48,9 @@ class KittenRequest(AutoParadigmMixin):
     def host(self):
         kind = self.request['id']['kind']
 
-        if kind == 'req':
+        if kind == 'request':
             key = 'to'
-        elif kind == 'res':
+        elif kind == 'response':
             key = 'from'
 
         return 'tcp://{0}'.format(self.request['id'][key])

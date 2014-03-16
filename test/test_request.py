@@ -118,7 +118,7 @@ class TestRequestHost(object):
         self.to = 'fire-and-ice'
         self._from = 'looking-for-a-stranger'
         self.data = {'id': {
-            'kind': 'req',
+            'kind': 'request',
             'to': self.to,
             'from': self._from,
         }}
@@ -130,7 +130,7 @@ class TestRequestHost(object):
         assert ret == 'tcp://{0}'.format(self.to)
 
     def test_res(self):
-        self.data['id']['kind'] = 'res'
+        self.data['id']['kind'] = 'response'
         request = KittenRequest(self.data)
 
         ret = request.host
