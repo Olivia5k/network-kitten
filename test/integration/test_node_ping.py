@@ -3,6 +3,7 @@ import uuid
 from kitten.server import KittenServer
 from kitten.request import KittenRequest
 
+import pytest
 from mock import MagicMock
 import gevent
 
@@ -28,6 +29,7 @@ class TestPropagation(object):
             ns.port = port
             self.servers.append(KittenServer(ns))
 
+    @pytest.mark.timeout(10)
     def test_node_ping(self):
         """
         Check that two servers can ping each other.
@@ -37,17 +39,16 @@ class TestPropagation(object):
         3) Make sure the local server made the request and got an ack
         4) Make sure the remote server made the response and got an ack
 
-
         """
 
         return
         map(lambda s: s.start(), self.servers)
-        gevent.sleep(0.1)  # Let them start
+        gevent.sleep(0.1)  # Allow them some time to start up
 
         request = KittenRequest(self.request)
         self.servers[0].queue.put(request)
         assert self.servers[1].queue.empty()
 
-        gevent.sleep(0.5)
+        gevent.sleep(0.3)
 
         self.fail()
