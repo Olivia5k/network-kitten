@@ -111,3 +111,27 @@ class TestRequestItem(MockDatabaseMixin):
         srv.add.assert_called_once_with(kri.return_value)
         srv.commit.assert_called_once_with()
         srv.close.assert_called_once_with()
+
+
+class TestRequestHost(object):
+    def setup_method(self, method):
+        self.to = 'fire-and-ice'
+        self._from = 'looking-for-a-stranger'
+        self.data = {'id': {
+            'kind': 'req',
+            'to': self.to,
+            'from': self._from,
+        }}
+
+    def test_req(self):
+        request = KittenRequest(self.data)
+
+        ret = request.host
+        assert ret == 'tcp://{0}'.format(self.to)
+
+    def test_res(self):
+        self.data['id']['kind'] = 'res'
+        request = KittenRequest(self.data)
+
+        ret = request.host
+        assert ret == 'tcp://{0}'.format(self._from)

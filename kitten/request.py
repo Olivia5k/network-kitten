@@ -47,12 +47,11 @@ class KittenRequest(AutoParadigmMixin):
     @property
     def host(self):
         kind = self.request['id']['kind']
+
         if kind == 'req':
             key = 'to'
         elif kind == 'res':
             key = 'from'
-        else:
-            raise NotImplemented('Unknown request kind: {0}'.format(kind))
 
         return 'tcp://{0}'.format(self.request['id'][key])
 
