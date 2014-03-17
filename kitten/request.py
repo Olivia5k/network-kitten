@@ -64,7 +64,11 @@ class KittenRequest(AutoParadigmMixin):
 
     def process(self, socket):
         try:
-            response = self.process_request()
+            func = getattr(
+                self, 'process_{0}_{1}'.format(self.kind, self.phase)
+            )
+            response = func()
+
         except jsonschema.exceptions.ValidationError as e:
             self.log.exception('Validation error')
             response = {
@@ -86,9 +90,9 @@ class KittenRequest(AutoParadigmMixin):
         confirm = socket.recv_json()
         self.process_confirm(confirm)
 
-    def process_request(self):
+    def process_request_payload(self):
         """
-        Process the request.
+        Process a request in the payload phase.
 
         This function will take an incoming request, decode it,
         send it to the appropriate paradigm and handler, get the response,
@@ -111,6 +115,15 @@ class KittenRequest(AutoParadigmMixin):
 
         self.log.debug('Returning response: {0}', self.response)
         return self.response
+
+    def process_request_ack(self):
+        return None  # pragma: nocover
+
+    def process_response_payload(self):
+        self.validate_response(self.request)
+
+    def process_response_ack(self):
+        return None  # pragma: nocover
 
     def process_confirm(self, response):
         """
