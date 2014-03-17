@@ -52,6 +52,9 @@ class KittenRequest(AutoParadigmMixin):
     def phase(self):
         return self.request['id']['phase']
 
+    @property
+    def host(self):
+        kind = self.kind
         if kind == 'request':
             key = 'to'
         elif kind == 'response':
