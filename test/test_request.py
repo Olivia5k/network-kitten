@@ -15,10 +15,22 @@ class RequestMixin(object):
 
 
 class TestRequestValidation(RequestMixin):
+    def setup_method(self, method):
+        self.request = {
+            'hehe': 'fail',
+            'paradigm': 'test',
+            'method': 'test',
+        }
+
     def test_handle_request_invalid_validation(self):
-        request = KittenRequest({"hehe": "fail"})
+        request = KittenRequest(self.request)
         with pytest.raises(jsonschema.exceptions.ValidationError):
-            request.process_request()
+            request.process_request_payload()
+
+    def test_handle_response_invalid_validation(self):
+        request = KittenRequest(self.request)
+        with pytest.raises(jsonschema.exceptions.ValidationError):
+            request.process_response_payload()
 
 
 class TestRequestProcess(RequestMixin):
@@ -30,6 +42,7 @@ class TestRequestProcess(RequestMixin):
                 'from': 'all of us',
                 'to': 'all of you',
                 'kind': 'request',
+                'phase': 'payload',
             },
             'paradigm': 'test',
             'method': 'test',
@@ -43,7 +56,7 @@ class TestRequestProcess(RequestMixin):
         self.socket.send_json.assert_called_once_with(check)
 
     @patch.object(KittenRequest, 'process_confirm')
-    @patch.object(KittenRequest, 'process_request')
+    @patch.object(KittenRequest, 'process_request_payload')
     def test_process(self, pr, pc):
         response = MagicMock()
         pr.return_value = response
@@ -55,17 +68,17 @@ class TestRequestProcess(RequestMixin):
         self.socket.recv_json.assert_called_once_with()
         pc.assert_called_once_with(self.socket.recv_json.return_value)
 
-    @patch.object(KittenRequest, 'process_request')
+    @patch.object(KittenRequest, 'process_request_payload')
     def test_process_validationerror(self, pr):
         msg = 'Hehehehee'
         pr.side_effect = jsonschema.exceptions.ValidationError(msg)
         self.request.process(self.socket)
         self.check_code('VALIDATION_ERROR', msg)
 
-    @patch.object(KittenRequest, 'process_request')
-    def test_process_exception(self, process_request):
+    @patch.object(KittenRequest, 'process_request_payload')
+    def test_process_exception(self, process_request_payload):
         msg = '*giggles*'
-        process_request.side_effect = Exception(msg)
+        process_request_payload.side_effect = Exception(msg)
         self.request.process(self.socket)
         self.check_code('UNKNOWN_ERROR', msg)
 
@@ -87,7 +100,7 @@ class TestRequestHandle(RequestMixin):
 
         loads.return_value = data
 
-        ret = request.process_request()
+        ret = request.process_request_payload()
 
         req.assert_called_once_with(data)
         paradigm.scale_response.assert_called_once_with(data)
