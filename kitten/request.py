@@ -117,13 +117,13 @@ class KittenRequest(AutoParadigmMixin):
         return self.response
 
     def process_request_ack(self):
-        return None  # pragma: nocover
+        return None
 
     def process_response_payload(self):
         self.validate_response(self.request)
 
     def process_response_ack(self):
-        return None  # pragma: nocover
+        return None
 
     def process_confirm(self, response):
         """
