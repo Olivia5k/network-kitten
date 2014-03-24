@@ -31,6 +31,12 @@ class RequestMixin(object):
             data['id'].update({'kind': k, 'phase': p})
             setattr(self, '{0}_{1}'.format(k, p), data)
 
+    def check_code(self, code, msg):
+        check = {'code': code, 'message': msg}
+        check.update(self.request_payload)
+        self.socket.send_json.assert_called_once_with(check)
+
+
 
 class TestRequestValidation(RequestMixin):
     def setup_method(self, method):
@@ -51,15 +57,10 @@ class TestRequestValidation(RequestMixin):
             request.process_response_payload()
 
 
-class TestRequestProcess(RequestMixin):
+class TestRequestProcessPhases(RequestMixin):
     def setup_method(self, method):
         self.socket = MagicMock()
-        super(TestRequestProcess, self).setup_method(method)
-
-    def check_code(self, code, msg):
-        check = {'code': code, 'message': msg}
-        check.update(self.request_payload)
-        self.socket.send_json.assert_called_once_with(check)
+        super(TestRequestProcessPhases, self).setup_method(method)
 
     def check_phase(self, request, confirm, method):
         request = KittenRequest(request)
@@ -93,6 +94,12 @@ class TestRequestProcess(RequestMixin):
     @patch.object(KittenRequest, 'process_response_ack')
     def test_process_response_ack(self, pc, ack):
         self.check_phase(self.response_ack, pc, ack)
+
+
+class TestRequestProcessErrors(RequestMixin):
+    def setup_method(self, method):
+        self.socket = MagicMock()
+        super(TestRequestProcessErrors, self).setup_method(method)
 
     @patch.object(KittenRequest, 'process_request_payload')
     def test_process_validationerror(self, pr):
