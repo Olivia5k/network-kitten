@@ -15,6 +15,22 @@ class RequestMixin(object):
     def setup_method(self, method):
         self.server = KittenServer(MagicMock())
 
+        self.request_base = {
+            'id': {
+                'uuid': 'uuid-hehe-etc',
+                'from': 'all of us',
+                'to': 'all of you',
+            },
+            'paradigm': 'test',
+            'method': 'test',
+        }
+
+        # Generate all four different request sets
+        for k, p in product(('request', 'response'), ('init', 'payload')):
+            data = deepcopy(self.request_base)
+            data['id'].update({'kind': k, 'phase': p})
+            setattr(self, '{0}_{1}'.format(k, p), data)
+
 
 class TestRequestValidation(RequestMixin):
     def setup_method(self, method):
@@ -38,22 +54,6 @@ class TestRequestValidation(RequestMixin):
 class TestRequestProcess(RequestMixin):
     def setup_method(self, method):
         self.socket = MagicMock()
-        self.request_base = {
-            'id': {
-                'uuid': 'uuid-hehe-etc',
-                'from': 'all of us',
-                'to': 'all of you',
-            },
-            'paradigm': 'test',
-            'method': 'test',
-        }
-
-        # Generate all four different request sets
-        for k, p in product(('request', 'response'), ('init', 'payload')):
-            data = deepcopy(self.request_base)
-            data['id'].update({'kind': k, 'phase': p})
-            setattr(self, '{0}_{1}'.format(k, p), data)
-
         super(TestRequestProcess, self).setup_method(method)
 
     def check_code(self, code, msg):
