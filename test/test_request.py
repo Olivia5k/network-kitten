@@ -1,6 +1,8 @@
 import jsonschema
 import pytest
 
+from itertools import product
+from copy import deepcopy
 from mock import MagicMock, patch
 
 from kitten.server import KittenServer
@@ -36,17 +38,22 @@ class TestRequestValidation(RequestMixin):
 class TestRequestProcess(RequestMixin):
     def setup_method(self, method):
         self.socket = MagicMock()
-        self.request_payload = {
+        self.request_base = {
             'id': {
                 'uuid': 'uuid-hehe-etc',
                 'from': 'all of us',
                 'to': 'all of you',
-                'kind': 'request',
-                'phase': 'payload',
             },
             'paradigm': 'test',
             'method': 'test',
         }
+
+        # Generate all four different request sets
+        for k, p in product(('request', 'response'), ('init', 'payload')):
+            data = deepcopy(self.request_base)
+            data['id'].update({'kind': k, 'phase': p})
+            setattr(self, '{0}_{1}'.format(k, p), data)
+
         super(TestRequestProcess, self).setup_method(method)
 
     def check_code(self, code, msg):
