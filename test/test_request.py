@@ -26,7 +26,7 @@ class RequestMixin(object):
         }
 
         # Generate all four different request sets
-        for k, p in product(('request', 'response'), ('init', 'payload')):
+        for k, p in product(('request', 'response'), ('payload', 'ack')):
             data = deepcopy(self.request_base)
             data['id'].update({'kind': k, 'phase': p})
             setattr(self, '{0}_{1}'.format(k, p), data)
@@ -61,20 +61,38 @@ class TestRequestProcess(RequestMixin):
         check.update(self.request_payload)
         self.socket.send_json.assert_called_once_with(check)
 
-    @patch.object(KittenRequest, 'process_confirm')
-    @patch.object(KittenRequest, 'process_request_payload')
-    def test_process_request_payload(self, pr, pc):
-        request = KittenRequest(self.request_payload)
+    def check_phase(self, request, confirm, method):
+        request = KittenRequest(request)
 
         response = MagicMock()
-        pr.return_value = response
+        confirm.return_value = response
 
         request.process(self.socket)
 
-        pr.assert_called_once_with()
+        confirm.assert_called_once_with()
         self.socket.send_json.assert_called_once_with(response)
         self.socket.recv_json.assert_called_once_with()
-        pc.assert_called_once_with(self.socket.recv_json.return_value)
+        method.assert_called_once_with(self.socket.recv_json.return_value)
+
+    @patch.object(KittenRequest, 'process_confirm')
+    @patch.object(KittenRequest, 'process_request_payload')
+    def test_process_request_payload(self, pc, payload):
+        self.check_phase(self.request_payload, pc, payload)
+
+    @patch.object(KittenRequest, 'process_confirm')
+    @patch.object(KittenRequest, 'process_request_ack')
+    def test_process_request_ack(self, pc, ack):
+        self.check_phase(self.request_ack, pc, ack)
+
+    @patch.object(KittenRequest, 'process_confirm')
+    @patch.object(KittenRequest, 'process_response_payload')
+    def test_process_response_payload(self, pc, payload):
+        self.check_phase(self.response_payload, pc, payload)
+
+    @patch.object(KittenRequest, 'process_confirm')
+    @patch.object(KittenRequest, 'process_response_ack')
+    def test_process_response_ack(self, pc, ack):
+        self.check_phase(self.response_ack, pc, ack)
 
     @patch.object(KittenRequest, 'process_request_payload')
     def test_process_validationerror(self, pr):
