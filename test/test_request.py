@@ -96,6 +96,12 @@ class TestRequestProcessPhases(RequestMixin):
         self.check_phase(self.response_ack, pc, ack)
 
 
+class TestRequestProcessIntegration(RequestMixin):
+    def setup_method(self, method):
+        self.socket = MagicMock()
+        super(TestRequestProcessIntegration, self).setup_method(method)
+
+
 class TestRequestProcessErrors(RequestMixin):
     def setup_method(self, method):
         self.socket = MagicMock()
